@@ -292,6 +292,39 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Impressão",
+			"description": "Endpoint para gerar os PDFs de solicitação.",
+			"item": [
+				{
+					"name": "Gerar Impressão PDF",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"exames\": [\n        1\n    ],\n    \"pacotes\": [\n        1\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/gerar-impressao",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "gerar-impressao"]
+						},
+						"description": "Envia um array de IDs de exames avulsos e/ou IDs de pacotes. A API agrupa os exames por 'group' e retorna um PDF com páginas separadas.\n\n**Como testar:**\n1. Crie exames em 'Grupo 1' e 'Grupo 2'.\n2. Crie um pacote com esses exames.\n3. Use os IDs reais aqui para gerar o PDF.\n\n**Nota:** O Postman irá renderizar o PDF na aba \"Response\"."
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
