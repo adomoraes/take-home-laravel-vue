@@ -1,0 +1,314 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+		"name": "API Solicitação de Exames",
+		"description": "Collection para testar a API de Exames e Pacotes desenvolvida em Laravel.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Exames",
+			"description": "Endpoint para o CRUD de Exames (avulsos).",
+			"item": [
+				{
+					"name": "Listar Exames",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/exames",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "exames"]
+						},
+						"description": "Lista todos os exames cadastrados."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Exame",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Captura o ID do exame recém-criado e salva na variável 'exameId'",
+									"pm.environment.set(\"exameId\", pm.response.json().id);",
+									"console.log(\"Exame ID \" + pm.response.json().id + \" salvo.\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Retinografia (simples)\",\n    \"laterality\": \"AO\",\n    \"comment\": \"Paciente com suspeita de glaucoma.\",\n    \"group\": \"Grupo 1\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/exames",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "exames"]
+						},
+						"description": "Cria um novo exame.\n\n**Valores válidos para 'group'**: 'Individual', 'Grupo 1', 'Grupo 2', 'Grupo 3', 'Grupo 4', 'Grupo 5'\n**Valores válidos para 'laterality'**: 'OD', 'OE', 'AO'"
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Exame",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/exames/{{exameId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "exames", "{{exameId}}"]
+						},
+						"description": "Busca um exame específico pelo seu ID. \n\nA variável `{{exameId}}` é preenchida automaticamente ao executar o request \"Criar Exame\"."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Exame",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Retinografia (Atualizada)\",\n    \"laterality\": \"AO\",\n    \"comment\": \"Comentário atualizado.\",\n    \"group\": \"Grupo 2\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/exames/{{exameId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "exames", "{{exameId}}"]
+						},
+						"description": "Atualiza um exame existente. O `body` deve conter todos os campos obrigatórios.\n\nA variável `{{exameId}}` é preenchida automaticamente ao executar o request \"Criar Exame\"."
+					},
+					"response": []
+				},
+				{
+					"name": "Apagar Exame",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/exames/{{exameId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "exames", "{{exameId}}"]
+						},
+						"description": "Apaga um exame pelo seu ID.\n\nA variável `{{exameId}}` é preenchida automaticamente ao executar o request \"Criar Exame\"."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pacotes",
+			"description": "Endpoint para o CRUD de Pacotes (grupos de exames).",
+			"item": [
+				{
+					"name": "Listar Pacotes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes"]
+						},
+						"description": "Lista todos os pacotes. A resposta já inclui os exames de cada pacote (Eager Loading)."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Pacote",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Captura o ID do pacote recém-criado e salva na variável 'pacoteId'",
+									"pm.environment.set(\"pacoteId\", pm.response.json().id);",
+									"console.log(\"Pacote ID \" + pm.response.json().id + \" salvo.\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Pacote Glaucoma Básico\",\n    \"observations\": \"Realizar exames na ordem.\",\n    \"exams\": [\n        1,\n        2\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes"]
+						},
+						"description": "Cria um novo pacote.\n\n**IMPORTANTE**: O campo 'exams' é um array de IDs de exames que DEVEM existir no banco de dados. \n\n**Como testar:** \n1. Use o request \"Criar Exame\" algumas vezes para criar exames (ex: IDs 1 e 2).\n2. Coloque esses IDs reais aqui no array `exams`."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Pacote",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes/{{pacoteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes", "{{pacoteId}}"]
+						},
+						"description": "Busca um pacote específico pelo seu ID.\n\nA variável `{{pacoteId}}` é preenchida automaticamente ao executar o request \"Criar Pacote\"."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Pacote",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Pacote Glaucoma (Atualizado)\",\n    \"observations\": \"Observação atualizada.\",\n    \"exams\": [\n        1\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes/{{pacoteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes", "{{pacoteId}}"]
+						},
+						"description": "Atualiza um pacote. O método 'sync' da API vai **substituir** a lista de exames pela que for enviada aqui.\n\n(Se o pacote tinha os exames `[1, 2]` e você enviar `[1]`, o exame 2 será removido do pacote)."
+					},
+					"response": []
+				},
+				{
+					"name": "Apagar Pacote",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes/{{pacoteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes", "{{pacoteId}}"]
+						},
+						"description": "Apaga um pacote pelo seu ID. (Não apaga os exames, apenas o pacote e a associação)."
+					},
+					"response": []
+				},
+				{
+					"name": "Adicionar Exames a Pacote",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"exams\": [\n        3,\n        4\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/pacotes/{{pacoteId}}/exames",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "pacotes", "{{pacoteId}}", "exames"]
+						},
+						"description": "Endpoint personalizado. Adiciona exames a um pacote **SEM remover** os que já lá estão.\n\nUse isto para adicionar mais exames a um pacote existente."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost",
+			"description": "URL base da sua aplicação. Se estiver a usar Laravel Sail, o padrão é http://localhost"
+		},
+		{
+			"key": "exameId",
+			"value": "1",
+			"description": "Armazena o ID do último exame criado ou de um exame para testes."
+		},
+		{
+			"key": "pacoteId",
+			"value": "1",
+			"description": "Armazena o ID do último pacote criado ou de um pacote para testes."
+		}
+	]
+}
