@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ExameController;
 use App\Http\Controllers\Api\PacoteController;
+use App\Http\Controllers\Api\ImpressaoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,9 @@ Route::apiResource('pacotes', PacoteController::class);
 // Rota personalizada para adicionar múltiplos exames a um pacote de uma só vez
 // Ex: POST /api/pacotes/5/exames (com um array de IDs de exames no body)
 Route::post('pacotes/{pacote}/exames', [PacoteController::class, 'adicionarExames']);
+
+// Endpoint que recebe os exames/pacotes selecionados e retorna um PDF
+Route::post('gerar-impressao', [ImpressaoController::class, 'gerarPdf']);
 
 // Poderíamos também adicionar uma rota para remover exames, se necessário:
 // Route::delete('pacotes/{pacote}/exames', [PacoteController::class, 'removerExames']);
