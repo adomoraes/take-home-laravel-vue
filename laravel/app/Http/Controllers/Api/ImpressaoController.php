@@ -50,11 +50,11 @@ class ImpressaoController extends Controller
             'paginas' => $paginas,
             'dadosMockados' => $dadosMockados
         ]);
-        
+
         // 6. Definir o tamanho do papel (opcional, mas recomendado)
         $pdf->setPaper('a4', 'portrait'); // retrato
 
-        // 7. Enviar o PDF de volta como uma resposta HTTP
+        // 7. Transmitir o PDF para o browser
         return $pdf->stream('solicitacao_exames.pdf');
     }
 }

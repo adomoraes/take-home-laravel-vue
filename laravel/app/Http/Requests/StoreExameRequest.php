@@ -31,7 +31,7 @@ class StoreExameRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'comment' => 'required|string',
+            'comment' => 'nullable|string',
             
             // Opcional, mas se existir, tem de ser um dos valores permitidos
             'laterality' => ['nullable', Rule::in($lateralidadesPermitidas)],
