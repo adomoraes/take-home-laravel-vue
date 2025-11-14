@@ -14,7 +14,7 @@ class CreateExamesTable extends Migration{
             $table->id();
             $table->string('name');
             $table->enum('laterality', ['OD', 'OE', 'AO'])->nullable();
-            $table->string('comment');
+            $table->string('comment')->nullable();
             $table->enum('group', ['Individual', 'Grupo 1', 'Grupo 2', 'Grupo 3', 'Grupo 4', 'Grupo 5']);
             $table->timestamps();
         });
