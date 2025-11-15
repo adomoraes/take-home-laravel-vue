@@ -5,6 +5,11 @@
 
 			<div class="flex flex-wrap gap-2">
 				<button
+					@click="abrirModalCriarExame"
+					class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
+					Cadastrar Novo Exame
+				</button>
+				<button
 					@click="abrirModalExame"
 					class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
 					Adicionar Exame Avulso
@@ -21,6 +26,12 @@
 				</button>
 			</div>
 		</div>
+
+		<modal-criar-exame
+			:show="isModalCriarExameVisible"
+			@close="fecharModalCriarExame"
+			@exame-criado="handleExameCriado">
+		</modal-criar-exame>
 
 		<modal-criar-pacote
 			:show="isModalCriarVisible"
@@ -124,11 +135,10 @@ export default {
 			isModalCriarVisible: false,
 			isModalSelecionarVisible: false,
 			isModalExameVisible: false,
+			isModalCriarExameVisible: false, // <-- ESTADO ADICIONADO
 
-			// --- ADICIONADO PARA IMPRESSÃO ---
 			isLoading: false,
 			erroImpressao: null,
-			// --------------------------------
 		}
 	},
 
@@ -177,7 +187,6 @@ export default {
 			this.isModalSelecionarVisible = false
 		},
 		adicionarPacotes(pacotes) {
-			// 'pacotes' é o array de objetos vindo do evento '@pacotes-adicionados'
 			pacotes.forEach((pacote) => {
 				if (!this.pacotesSelecionados.find((p) => p.id === pacote.id)) {
 					this.pacotesSelecionados.push(pacote)
@@ -195,7 +204,6 @@ export default {
 			this.isModalExameVisible = false
 		},
 		adicionarExamesAvulsos(exames) {
-			// 'exames' é o array de objetos vindo do evento '@exames-adicionados'
 			exames.forEach((exame) => {
 				if (!this.examesAvulsosSelecionados.find((e) => e.id === exame.id)) {
 					this.examesAvulsosSelecionados.push(exame)
@@ -208,39 +216,40 @@ export default {
 			)
 		},
 
-		// --- MÉTODO DE IMPRESSÃO IMPLEMENTADO ---
+		// --- MÉTODOS ADICIONADOS PARA O MODAL DE CRIAR EXAME ---
+		abrirModalCriarExame() {
+			this.isModalCriarExameVisible = true
+		},
+		fecharModalCriarExame() {
+			this.isModalCriarExameVisible = false
+		},
+		handleExameCriado() {
+			// Este método é chamado pelo evento @exame-criado
+			this.fecharModalCriarExame()
+			this.carregarExames() // Recarrega a lista de exames
+		},
+		// --- FIM DOS MÉTODOS ADICIONADOS ---
+
+		// --- MÉTODO DE IMPRESSÃO ---
 		imprimir() {
 			this.isLoading = true
 			this.erroImpressao = null
 
-			// 1. Mapear os arrays de objetos para arrays de IDs
 			const examesIds = this.examesAvulsosSelecionados.map((exame) => exame.id)
 			const pacotesIds = this.pacotesSelecionados.map((pacote) => pacote.id)
 
-			// 2. Montar o payload (carga útil) para a API
 			const payload = {
 				exames: examesIds,
 				pacotes: pacotesIds,
 			}
 
-			// 3. Chamar a API
 			api
 				.gerarPdf(payload)
 				.then((response) => {
-					// 4. Sucesso! A resposta é o 'blob' do PDF
-
-					// Cria um URL temporário para o blob
 					const file = new Blob([response.data], { type: "application/pdf" })
 					const fileURL = URL.createObjectURL(file)
-
-					// Abre o PDF num novo separador
 					window.open(fileURL, "_blank")
-
 					this.isLoading = false
-
-					// (Opcional) Limpar a seleção após a impressão
-					// this.examesAvulsosSelecionados = [];
-					// this.pacotesSelecionados = [];
 				})
 				.catch((error) => {
 					console.error("Erro ao gerar PDF:", error)
@@ -250,7 +259,6 @@ export default {
 		},
 	},
 
-	// 'mounted' é chamado quando o componente é carregado
 	mounted() {
 		console.log("Componente SolicitacaoExames montado.")
 		this.carregarExames()

@@ -17,6 +17,12 @@ export default {
 		return apiClient.get("/exames")
 	},
 
+	// --- FUNÇÃO ADICIONADA ---
+	createExame(exameData) {
+		// exameData = { name: '...', comment: '...', group: '...', laterality: '...' }
+		return apiClient.post("/exames", exameData)
+	},
+
 	// --- Pacotes ---
 	getPacotes() {
 		return apiClient.get("/pacotes")

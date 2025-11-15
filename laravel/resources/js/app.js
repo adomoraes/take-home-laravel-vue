@@ -8,12 +8,12 @@ import Vue from "vue"
 Vue.component("solicitacao-exames", () =>
 	import("./components/SolicitacaoExames.vue")
 )
-// -----------------------------
-// --- ADICIONE ESTE NOVO COMPONENTE ---
+Vue.component("modal-criar-exame", () =>
+	import("./components/ModalCriarExame.vue")
+)
 Vue.component("modal-criar-pacote", () =>
 	import("./components/ModalCriarPacote.vue")
 )
-// ------------------------------------
 Vue.component("modal-selecionar-pacote", () =>
 	import("./components/ModalSelecionarPacote.vue")
 )
