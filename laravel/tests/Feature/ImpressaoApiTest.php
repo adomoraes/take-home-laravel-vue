@@ -31,7 +31,7 @@ class ImpressaoApiTest extends TestCase
         // 4. Verificar as asserções
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/pdf');
-        $response->assertHeader('Content-Disposition', 'stream; filename="solicitacao_exames.pdf"');
+        $response->assertHeader('Content-Disposition', 'inline; filename="solicitacao_exames.pdf"');
 
         // Opcional: verificar se o conteúdo não está vazio
         $this->assertNotEmpty($response->getContent());

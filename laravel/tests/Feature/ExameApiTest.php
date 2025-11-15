@@ -30,7 +30,7 @@ class ExameApiTest extends TestCase
 
         // Verifica se a resposta foi 201 (Created)
         $response->assertStatus(201)
-                 ->assertJsonFragment(['name' => 'Raio-X do Tórax']);
+            ->assertJsonFragment(['name' => 'Raio-X do Tórax']);
 
         // Verifica se o exame foi realmente salvo no banco de dados
         $this->assertDatabaseHas('exames', [
@@ -55,7 +55,7 @@ class ExameApiTest extends TestCase
 
         // Verifica se a resposta foi 422 (Unprocessable Entity)
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['name']); // Verifica se o erro é no campo 'name'
+            ->assertJsonValidationErrors(['name']); // Verifica se o erro é no campo 'name'
     }
 
     /**
@@ -72,7 +72,7 @@ class ExameApiTest extends TestCase
 
         // Verifica se a resposta foi 200 (OK)
         $response->assertStatus(200)
-                 ->assertJsonCount(3); // Verifica se a resposta contém 3 itens
+            ->assertJsonCount(3); // Verifica se a resposta contém 3 itens
     }
 
     /**
@@ -92,7 +92,7 @@ class ExameApiTest extends TestCase
         $response = $this->putJson("/api/exames/{$exame->id}", $updateData);
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['name' => 'Ultrassonografia Abdominal']);
+            ->assertJsonFragment(['name' => 'Ultrassonografia Abdominal']);
 
         $this->assertDatabaseHas('exames', [
             'id' => $exame->id,
