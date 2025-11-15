@@ -80,10 +80,28 @@
 
 			<div class="flex justify-end mt-6">
 				<button
-					class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-					Imprimir Solicitação
+					@click="imprimir"
+					:disabled="
+						isLoading ||
+						(pacotesSelecionados.length === 0 &&
+							examesAvulsosSelecionados.length === 0)
+					"
+					class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+					:class="{
+						'opacity-50 cursor-not-allowed':
+							isLoading ||
+							(pacotesSelecionados.length === 0 &&
+								examesAvulsosSelecionados.length === 0),
+					}">
+					<span v-if="isLoading">Aguarde...</span>
+					<span v-else>Imprimir Solicitação</span>
 				</button>
 			</div>
+			<p
+				v-if="erroImpressao"
+				class="text-red-500 text-xs italic text-right mt-2">
+				{{ erroImpressao }}
+			</p>
 		</div>
 	</div>
 </template>
@@ -105,7 +123,12 @@ export default {
 
 			isModalCriarVisible: false,
 			isModalSelecionarVisible: false,
-			isModalExameVisible: false, // Estado para o novo modal
+			isModalExameVisible: false,
+
+			// --- ADICIONADO PARA IMPRESSÃO ---
+			isLoading: false,
+			erroImpressao: null,
+			// --------------------------------
 		}
 	},
 
@@ -185,9 +208,45 @@ export default {
 			)
 		},
 
-		// --- MÉTODO DE IMPRESSÃO ---
+		// --- MÉTODO DE IMPRESSÃO IMPLEMENTADO ---
 		imprimir() {
-			// Lógica para impressão (futuro)
+			this.isLoading = true
+			this.erroImpressao = null
+
+			// 1. Mapear os arrays de objetos para arrays de IDs
+			const examesIds = this.examesAvulsosSelecionados.map((exame) => exame.id)
+			const pacotesIds = this.pacotesSelecionados.map((pacote) => pacote.id)
+
+			// 2. Montar o payload (carga útil) para a API
+			const payload = {
+				exames: examesIds,
+				pacotes: pacotesIds,
+			}
+
+			// 3. Chamar a API
+			api
+				.gerarPdf(payload)
+				.then((response) => {
+					// 4. Sucesso! A resposta é o 'blob' do PDF
+
+					// Cria um URL temporário para o blob
+					const file = new Blob([response.data], { type: "application/pdf" })
+					const fileURL = URL.createObjectURL(file)
+
+					// Abre o PDF num novo separador
+					window.open(fileURL, "_blank")
+
+					this.isLoading = false
+
+					// (Opcional) Limpar a seleção após a impressão
+					// this.examesAvulsosSelecionados = [];
+					// this.pacotesSelecionados = [];
+				})
+				.catch((error) => {
+					console.error("Erro ao gerar PDF:", error)
+					this.erroImpressao = "Não foi possível gerar o PDF. Tente novamente."
+					this.isLoading = false
+				})
 		},
 	},
 
