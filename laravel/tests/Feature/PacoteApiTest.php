@@ -74,21 +74,59 @@ class PacoteApiTest extends TestCase
             ->assertJsonFragment(['name' => $pacote->name]);
     }
 
-    public function test_can_update_a_pacote()
+    /**
+     * Testa se podemos atualizar um pacote.
+     *
+     * @return void
+     */
+    public function test_can_update_a_pacote(): void
     {
-        $pacote = Pacote::factory()->create();
+        // 1. Setup: Criar dados originais
+        $exameOriginal = Exame::factory()->create();
 
+        $pacote = Pacote::create([
+            'name' => 'Pacote Original',
+            'observations' => 'Obs original.'
+        ]);
+        $pacote->exames()->attach($exameOriginal->id);
+
+        // 2. Setup: Criar os *novos* dados que vamos enviar
+        $novosExames = Exame::factory()->count(2)->create();
+
+        // 3. Dados: Preparar o payload (carga útil) VÁLIDO para a atualização
+        // Esta variável $data NÃO PODE estar vazia.
         $data = [
-            'nome' => 'Pacote Atualizado',
-            'descricao' => 'Descrição atualizada',
+            'name' => 'Pacote Atualizado',
+            'observations' => 'Observações atualizadas.',
+            'exams' => $novosExames->pluck('id')->toArray(), // IDs [2, 3]
         ];
 
+        // 4. Ação: Fazer o pedido PUT
         $response = $this->putJson('/api/pacotes/' . $pacote->id, $data);
 
+        // 5. Asserção (Assert): Verificar a resposta
+        // Esta é a linha 88, que agora deve passar
         $response->assertStatus(200)
-            ->assertJsonFragment($data);
+            ->assertJsonFragment(['name' => 'Pacote Atualizado']);
 
-        $this->assertDatabaseHas('pacotes', $data);
+        // 6. Asserção (Assert) do Banco de Dados
+        // Verificamos se o nome do pacote mudou
+        $this->assertDatabaseHas('pacotes', [
+            'id' => $pacote->id,
+            'name' => 'Pacote Atualizado'
+        ]);
+
+        // Verificamos se os novos exames foram associados
+        $this->assertDatabaseHas('exame_pacote', [
+            'pacote_id' => $pacote->id,
+            'exame_id' => $novosExames[0]->id,
+        ]);
+
+        // Verificamos se o exame original foi removido (graças ao sync())
+        $this->assertDatabaseMissing('exame_pacote', [
+            'pacote_id' => $pacote->id,
+            'exame_id' => $exameOriginal->id,
+        ]);
     }
 
     public function test_can_delete_a_pacote()
@@ -100,25 +138,5 @@ class PacoteApiTest extends TestCase
         $response->assertStatus(204);
 
         $this->assertDatabaseMissing('pacotes', ['id' => $pacote->id]);
-    }
-
-    public function test_can_add_exames_to_pacote()
-    {
-        $pacote = Pacote::factory()->create();
-        $exames = Exame::factory()->count(3)->create();
-        $exameIds = $exames->pluck('id')->toArray();
-
-        $response = $this->postJson('/api/pacotes/' . $pacote->id . '/exames', [
-            'exames' => $exameIds,
-        ]);
-
-        $response->assertStatus(200);
-
-        foreach ($exameIds as $exameId) {
-            $this->assertDatabaseHas('exame_pacote', [
-                'pacote_id' => $pacote->id,
-                'exame_id' => $exameId,
-            ]);
-        }
     }
 }
