@@ -17,6 +17,9 @@ Vue.component("modal-criar-pacote", () =>
 Vue.component("modal-selecionar-pacote", () =>
 	import("./components/ModalSelecionarPacote.vue")
 )
+Vue.component("modal-selecionar-exame", () =>
+	import("./components/ModalSelecionarExame.vue")
+)
 const app = new Vue({
 	el: "#app",
 })

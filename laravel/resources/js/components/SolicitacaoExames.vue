@@ -2,10 +2,16 @@
 	<div class="p-6 bg-gray-50 rounded-lg shadow-md max-w-4xl mx-auto">
 		<div class="flex justify-between items-center border-b pb-4 mb-4">
 			<h2 class="text-xl font-bold text-gray-700">Solicitação de Exames</h2>
-			<div>
+
+			<div class="flex flex-wrap gap-2">
+				<button
+					@click="abrirModalExame"
+					class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
+					Adicionar Exame Avulso
+				</button>
 				<button
 					@click="abrirModalSelecionar"
-					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
 					Pacote de exames
 				</button>
 				<button
@@ -30,7 +36,25 @@
 			@pacotes-adicionados="adicionarPacotes">
 		</modal-selecionar-pacote>
 
+		<modal-selecionar-exame
+			:show="isModalExameVisible"
+			:exames-disponiveis="examesDaApi"
+			@close="fecharModalExame"
+			@exames-adicionados="adicionarExamesAvulsos">
+		</modal-selecionar-exame>
+
 		<div class="bg-gray-100 p-4 rounded-md mt-6">
+			<div
+				v-if="examesAvulsosSelecionados.length > 0"
+				class="mb-4 p-3 bg-white rounded shadow-sm border">
+				<h3 class="font-semibold text-gray-800">Exames avulsos</h3>
+				<ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
+					<li v-for="exame in examesAvulsosSelecionados" :key="exame.id">
+						{{ exame.name }} ({{ exame.comment }})
+					</li>
+				</ul>
+			</div>
+
 			<div v-if="pacotesSelecionados.length > 0" class="mb-4">
 				<div
 					v-for="pacote in pacotesSelecionados"
@@ -45,8 +69,13 @@
 				</div>
 			</div>
 
-			<div v-if="pacotesSelecionados.length === 0" class="text-gray-500">
-				Nenhum pacote selecionado.
+			<div
+				v-if="
+					pacotesSelecionados.length === 0 &&
+					examesAvulsosSelecionados.length === 0
+				"
+				class="text-gray-500">
+				Nenhum exame ou pacote selecionado.
 			</div>
 
 			<div class="flex justify-end mt-6">
@@ -70,16 +99,18 @@ export default {
 		return {
 			examesDaApi: [],
 			pacotesDaApi: [],
-			examesSelecionados: [],
+
+			examesAvulsosSelecionados: [], // Array de OBJETOS de exame
 			pacotesSelecionados: [], // Array de OBJETOS de pacote
 
-			// Estado para controlar a visibilidade do modal
 			isModalCriarVisible: false,
-			isModalSelecionarVisible: false, // <-- ADICIONADO
+			isModalSelecionarVisible: false,
+			isModalExameVisible: false, // Estado para o novo modal
 		}
 	},
 
 	methods: {
+		// --- MÉTODOS DE CARREGAMENTO ---
 		carregarExames() {
 			api
 				.getExames()
@@ -91,7 +122,6 @@ export default {
 					console.error("Erro ao carregar exames:", error)
 				})
 		},
-
 		carregarPacotes() {
 			api
 				.getPacotes()
@@ -104,7 +134,7 @@ export default {
 				})
 		},
 
-		// Métodos para controlar o modal de CRIAR
+		// --- MÉTODOS MODAL NOVO PACOTE ---
 		abrirModalNovoPacote() {
 			this.isModalCriarVisible = true
 		},
@@ -116,7 +146,7 @@ export default {
 			this.carregarPacotes()
 		},
 
-		// --- MÉTODOS ADICIONADOS PARA O MODAL DE SELECIONAR ---
+		// --- MÉTODOS MODAL SELECIONAR PACOTE ---
 		abrirModalSelecionar() {
 			this.isModalSelecionarVisible = true
 		},
@@ -125,19 +155,37 @@ export default {
 		},
 		adicionarPacotes(pacotes) {
 			// 'pacotes' é o array de objetos vindo do evento '@pacotes-adicionados'
-
-			// Evitar duplicados
 			pacotes.forEach((pacote) => {
 				if (!this.pacotesSelecionados.find((p) => p.id === pacote.id)) {
 					this.pacotesSelecionados.push(pacote)
 				}
 			})
-
 			this.fecharModalSelecionar()
 			console.log("Pacotes na solicitação:", this.pacotesSelecionados)
 		},
-		// --- FIM DOS MÉTODOS ADICIONADOS ---
 
+		// --- MÉTODOS MODAL EXAME AVULSO ---
+		abrirModalExame() {
+			this.isModalExameVisible = true
+		},
+		fecharModalExame() {
+			this.isModalExameVisible = false
+		},
+		adicionarExamesAvulsos(exames) {
+			// 'exames' é o array de objetos vindo do evento '@exames-adicionados'
+			exames.forEach((exame) => {
+				if (!this.examesAvulsosSelecionados.find((e) => e.id === exame.id)) {
+					this.examesAvulsosSelecionados.push(exame)
+				}
+			})
+			this.fecharModalExame()
+			console.log(
+				"Exames avulsos na solicitação:",
+				this.examesAvulsosSelecionados
+			)
+		},
+
+		// --- MÉTODO DE IMPRESSÃO ---
 		imprimir() {
 			// Lógica para impressão (futuro)
 		},
