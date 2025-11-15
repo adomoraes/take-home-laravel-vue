@@ -4,21 +4,49 @@
 			<h2 class="text-xl font-bold text-gray-700">Solicitação de Exames</h2>
 			<div>
 				<button
+					@click="abrirModalSelecionar"
 					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
 					Pacote de exames
 				</button>
 				<button
+					@click="abrirModalNovoPacote"
 					class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
 					Novo pacote de Exames
 				</button>
 			</div>
 		</div>
 
-		<div class="bg-gray-100 p-4 rounded-md">
-			<h3 class="font-semibold text-gray-800 mb-2">Exames avulsos</h3>
+		<modal-criar-pacote
+			:show="isModalCriarVisible"
+			:exames-disponiveis="examesDaApi"
+			@close="fecharModalNovoPacote"
+			@pacote-criado="recarregarPacotes">
+		</modal-criar-pacote>
 
-			<div v-if="examesSelecionados.length === 0" class="text-gray-500">
-				Nenhum exame selecionado.
+		<modal-selecionar-pacote
+			:show="isModalSelecionarVisible"
+			:pacotes-disponiveis="pacotesDaApi"
+			@close="fecharModalSelecionar"
+			@pacotes-adicionados="adicionarPacotes">
+		</modal-selecionar-pacote>
+
+		<div class="bg-gray-100 p-4 rounded-md mt-6">
+			<div v-if="pacotesSelecionados.length > 0" class="mb-4">
+				<div
+					v-for="pacote in pacotesSelecionados"
+					:key="pacote.id"
+					class="mb-2 p-3 bg-white rounded shadow-sm border">
+					<h3 class="font-semibold text-gray-800">{{ pacote.name }}</h3>
+					<ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
+						<li v-for="exame in pacote.exames" :key="exame.id">
+							{{ exame.name }}
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div v-if="pacotesSelecionados.length === 0" class="text-gray-500">
+				Nenhum pacote selecionado.
 			</div>
 
 			<div class="flex justify-end mt-6">
@@ -32,25 +60,26 @@
 </template>
 
 <script>
-// 1. Importar o nosso serviço de API
 import api from "../apiService"
+// Os modais são carregados automaticamente porque os registámos no app.js
 
 export default {
 	name: "SolicitacaoExames",
 
 	data() {
 		return {
-			// Estado do nosso componente
-			examesDaApi: [], // Onde guardaremos os exames que vêm do GET /api/exames
-			pacotesDaApi: [], // Onde guardaremos os pacotes do GET /api/pacotes
+			examesDaApi: [],
+			pacotesDaApi: [],
+			examesSelecionados: [],
+			pacotesSelecionados: [], // Array de OBJETOS de pacote
 
-			examesSelecionados: [], // Lista de exames avulsos adicionados
-			pacotesSelecionados: [], // Lista de pacotes adicionados
+			// Estado para controlar a visibilidade do modal
+			isModalCriarVisible: false,
+			isModalSelecionarVisible: false, // <-- ADICIONADO
 		}
 	},
 
 	methods: {
-		// Funções para carregar dados da API
 		carregarExames() {
 			api
 				.getExames()
@@ -75,28 +104,50 @@ export default {
 				})
 		},
 
-		// Funções para os botões (a implementar)
-		abrirModalPacotes() {
-			// Lógica para abrir o ModalSelecionarPacote
-		},
+		// Métodos para controlar o modal de CRIAR
 		abrirModalNovoPacote() {
-			// Lógica para abrir o ModalCriarPacote
+			this.isModalCriarVisible = true
 		},
+		fecharModalNovoPacote() {
+			this.isModalCriarVisible = false
+		},
+		recarregarPacotes() {
+			this.fecharModalNovoPacote()
+			this.carregarPacotes()
+		},
+
+		// --- MÉTODOS ADICIONADOS PARA O MODAL DE SELECIONAR ---
+		abrirModalSelecionar() {
+			this.isModalSelecionarVisible = true
+		},
+		fecharModalSelecionar() {
+			this.isModalSelecionarVisible = false
+		},
+		adicionarPacotes(pacotes) {
+			// 'pacotes' é o array de objetos vindo do evento '@pacotes-adicionados'
+
+			// Evitar duplicados
+			pacotes.forEach((pacote) => {
+				if (!this.pacotesSelecionados.find((p) => p.id === pacote.id)) {
+					this.pacotesSelecionados.push(pacote)
+				}
+			})
+
+			this.fecharModalSelecionar()
+			console.log("Pacotes na solicitação:", this.pacotesSelecionados)
+		},
+		// --- FIM DOS MÉTODOS ADICIONADOS ---
+
 		imprimir() {
-			// Lógica para chamar o api.gerarPdf
+			// Lógica para impressão (futuro)
 		},
 	},
 
-	// 'mounted' é chamado quando o componente é carregado pela primeira vez
+	// 'mounted' é chamado quando o componente é carregado
 	mounted() {
 		console.log("Componente SolicitacaoExames montado.")
-		// Carregar os dados da API assim que o componente for carregado
 		this.carregarExames()
 		this.carregarPacotes()
 	},
 }
 </script>
-
-<style scoped>
-/* Podemos adicionar CSS específico do componente aqui, se necessário */
-</style>
