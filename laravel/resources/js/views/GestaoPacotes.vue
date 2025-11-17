@@ -1,10 +1,20 @@
 <template>
 	<div>
-		<div class="flex justify-between items-center mb-6">
+		<div
+			class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
 			<h1 class="text-3xl font-bold text-dark">Gestão de Pacotes</h1>
+
+			<div class="w-full md:w-1/2 lg:w-1/3">
+				<input
+					v-model="searchQuery"
+					type="text"
+					placeholder="Pesquisar por nome..."
+					class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" />
+			</div>
+			<p>-- Ou --</p>
 			<button
 				@click="abrirModalParaCriar"
-				class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded-lg">
+				class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto flex-shrink-0">
 				Cadastrar Novo Pacote
 			</button>
 		</div>
@@ -28,12 +38,15 @@
 							A carregar pacotes...
 						</td>
 					</tr>
-					<tr v-else-if="pacotes.length === 0">
+					<tr v-else-if="filteredPacotes.length === 0">
 						<td colspan="3" class="p-4 text-center text-gray-500">
-							Nenhum pacote cadastrado.
+							<span v-if="searchQuery"
+								>Nenhum pacote encontrado para "{{ searchQuery }}".</span
+							>
+							<span v-else>Nenhum pacote cadastrado.</span>
 						</td>
 					</tr>
-					<tr v-for="pacote in pacotes" :key="pacote.id">
+					<tr v-for="pacote in filteredPacotes" :key="pacote.id">
 						<td class="p-4 align-top">{{ pacote.name }}</td>
 						<td class="p-4 align-top">{{ pacote.exames.length }}</td>
 						<td class="p-4 text-center align-top">
@@ -54,7 +67,6 @@
 										d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
 								</svg>
 							</button>
-
 							<button
 								@click="handleDelete(pacote.id)"
 								class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 ml-2"
@@ -82,15 +94,20 @@
 					A carregar pacotes...
 				</div>
 				<div
-					v-else-if="pacotes.length === 0"
+					v-else-if="filteredPacotes.length === 0"
 					class="p-4 text-center text-gray-500">
-					Nenhum pacote cadastrado.
+					<span v-if="searchQuery"
+						>Nenhum pacote encontrado para "{{ searchQuery }}".</span
+					>
+					<span v-else>Nenhum pacote cadastrado.</span>
 				</div>
 
-				<div v-for="pacote in pacotes" :key="'mobile-' + pacote.id" class="p-4">
+				<div
+					v-for="pacote in filteredPacotes"
+					:key="'mobile-' + pacote.id"
+					class="p-4">
 					<div class="flex justify-between items-center mb-3">
 						<div class="font-bold text-dark text-lg">{{ pacote.name }}</div>
-
 						<div class="flex-shrink-0">
 							<button
 								@click="abrirModalParaEditar(pacote)"
@@ -109,7 +126,6 @@
 										d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
 								</svg>
 							</button>
-
 							<button
 								@click="handleDelete(pacote.id)"
 								class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 ml-2"
@@ -129,7 +145,6 @@
 							</button>
 						</div>
 					</div>
-
 					<div class="space-y-1 text-sm">
 						<div class="flex">
 							<strong class="w-24 flex-shrink-0 text-gray-500"
@@ -166,14 +181,29 @@ export default {
 	data() {
 		return {
 			isLoading: true,
-			pacotes: [], // A lista de pacotes da API
-			todosExames: [], // Lista de exames para passar ao modal
+			pacotes: [],
+			todosExames: [],
 			isModalOpen: false,
 			pacoteSelecionado: null,
-
 			isConfirmOpen: false,
 			pacoteParaExcluir: null,
+
+			// Estado para o Filtro/Pesquisa
+			searchQuery: "",
 		}
+	},
+
+	// Propriedade computada para o Filtro/Pesquisa
+	computed: {
+		filteredPacotes() {
+			if (!this.searchQuery) {
+				return this.pacotes
+			}
+			const lowerQuery = this.searchQuery.toLowerCase()
+			return this.pacotes.filter((pacote) =>
+				pacote.name.toLowerCase().includes(lowerQuery)
+			)
+		},
 	},
 
 	methods: {
@@ -181,7 +211,7 @@ export default {
 		fetchPacotes() {
 			this.isLoading = true
 			api
-				.getPacotes() // getPacotes já traz os exames (Eager Loading)
+				.getPacotes()
 				.then((response) => {
 					this.pacotes = response.data
 				})

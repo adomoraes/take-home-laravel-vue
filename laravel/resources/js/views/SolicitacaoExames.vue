@@ -39,13 +39,34 @@
 							Pacotes ({{ pacotesDisponiveis.length }})
 						</button>
 					</nav>
+
+					<div class="mt-4">
+						<input
+							v-if="currentTab === 'exames'"
+							v-model="exameSearchQuery"
+							type="text"
+							placeholder="Pesquisar exames..."
+							class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700" />
+						<input
+							v-if="currentTab === 'pacotes'"
+							v-model="pacoteSearchQuery"
+							type="text"
+							placeholder="Pesquisar pacotes..."
+							class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700" />
+					</div>
 				</div>
 
 				<div class="h-96 overflow-y-auto">
 					<div v-if="currentTab === 'exames'">
+						<div
+							v-if="filteredExamesDisponiveis.length === 0"
+							class="p-4 text-center text-gray-500">
+							<span v-if="exameSearchQuery">Nenhum exame encontrado.</span>
+							<span v-else>Nenhum exame disponível.</span>
+						</div>
 						<ul>
 							<li
-								v-for="exame in examesDisponiveis"
+								v-for="exame in filteredExamesDisponiveis"
 								:key="'exame-' + exame.id"
 								class="flex justify-between items-center p-3 hover:bg-light-bg border-b">
 								<div>
@@ -63,9 +84,15 @@
 					</div>
 
 					<div v-if="currentTab === 'pacotes'">
+						<div
+							v-if="filteredPacotesDisponiveis.length === 0"
+							class="p-4 text-center text-gray-500">
+							<span v-if="pacoteSearchQuery">Nenhum pacote encontrado.</span>
+							<span v-else>Nenhum pacote disponível.</span>
+						</div>
 						<ul>
 							<li
-								v-for="pacote in pacotesDisponiveis"
+								v-for="pacote in filteredPacotesDisponiveis"
 								:key="'pacote-' + pacote.id"
 								class="flex justify-between items-center p-3 hover:bg-light-bg border-b">
 								<div>
@@ -168,13 +195,34 @@
 							}})
 						</button>
 					</nav>
+
+					<div class="mt-4">
+						<input
+							v-if="currentTab === 'exames'"
+							v-model="exameSearchQuery"
+							type="text"
+							placeholder="Pesquisar exames..."
+							class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700" />
+						<input
+							v-if="currentTab === 'pacotes'"
+							v-model="pacoteSearchQuery"
+							type="text"
+							placeholder="Pesquisar pacotes..."
+							class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700" />
+					</div>
 				</div>
 
 				<div class="max-h-[60vh] overflow-y-auto">
 					<div v-if="currentTab === 'exames'">
+						<div
+							v-if="filteredExamesDaApi.length === 0"
+							class="p-4 text-center text-gray-500">
+							<span v-if="exameSearchQuery">Nenhum exame encontrado.</span>
+							<span v-else>Nenhum exame cadastrado.</span>
+						</div>
 						<ul>
 							<li
-								v-for="exame in examesDaApi"
+								v-for="exame in filteredExamesDaApi"
 								:key="'mobile-exame-' + exame.id"
 								class="flex justify-between items-center p-3 border-b"
 								:class="{ 'bg-light-bg': isExameAvulsoSelected(exame) }">
@@ -202,9 +250,15 @@
 					</div>
 
 					<div v-if="currentTab === 'pacotes'">
+						<div
+							v-if="filteredPacotesDaApi.length === 0"
+							class="p-4 text-center text-gray-500">
+							<span v-if="pacoteSearchQuery">Nenhum pacote encontrado.</span>
+							<span v-else>Nenhum pacote cadastrado.</span>
+						</div>
 						<ul>
 							<li
-								v-for="pacote in pacotesDaApi"
+								v-for="pacote in filteredPacotesDaApi"
 								:key="'mobile-pacote-' + pacote.id"
 								class="flex justify-between items-center p-3 border-b"
 								:class="{ 'bg-light-bg': isPacoteSelected(pacote) }">
@@ -254,17 +308,30 @@ export default {
 
 			currentTab: "exames", // Controla as abas
 			isLoading: false,
+
+			// Estado para o Filtro/Pesquisa
+			exameSearchQuery: "",
+			pacoteSearchQuery: "",
 		}
 	},
 
+	// Propriedades computadas (sem alterações)
 	computed: {
 		totalSelecionado() {
 			return (
 				this.examesAvulsosSelecionados.length + this.pacotesSelecionados.length
 			)
 		},
-
-		// Listas de "Disponíveis" para o layout Desktop
+		isExameAvulsoSelected() {
+			const selectedIds = new Set(
+				this.examesAvulsosSelecionados.map((e) => e.id)
+			)
+			return (exame) => selectedIds.has(exame.id)
+		},
+		isPacoteSelected() {
+			const selectedIds = new Set(this.pacotesSelecionados.map((p) => p.id))
+			return (pacote) => selectedIds.has(pacote.id)
+		},
 		examesDisponiveis() {
 			return this.examesDaApi.filter(
 				(exame) => !this.isExameAvulsoSelected(exame)
@@ -273,6 +340,34 @@ export default {
 		pacotesDisponiveis() {
 			return this.pacotesDaApi.filter(
 				(pacote) => !this.isPacoteSelected(pacote)
+			)
+		},
+		filteredExamesDisponiveis() {
+			if (!this.exameSearchQuery) return this.examesDisponiveis
+			const query = this.exameSearchQuery.toLowerCase()
+			return this.examesDisponiveis.filter((e) =>
+				e.name.toLowerCase().includes(query)
+			)
+		},
+		filteredPacotesDisponiveis() {
+			if (!this.pacoteSearchQuery) return this.pacotesDisponiveis
+			const query = this.pacoteSearchQuery.toLowerCase()
+			return this.pacotesDisponiveis.filter((p) =>
+				p.name.toLowerCase().includes(query)
+			)
+		},
+		filteredExamesDaApi() {
+			if (!this.exameSearchQuery) return this.examesDaApi
+			const query = this.exameSearchQuery.toLowerCase()
+			return this.examesDaApi.filter((e) =>
+				e.name.toLowerCase().includes(query)
+			)
+		},
+		filteredPacotesDaApi() {
+			if (!this.pacoteSearchQuery) return this.pacotesDaApi
+			const query = this.pacoteSearchQuery.toLowerCase()
+			return this.pacotesDaApi.filter((p) =>
+				p.name.toLowerCase().includes(query)
 			)
 		},
 	},
@@ -300,15 +395,7 @@ export default {
 				})
 		},
 
-		// --- LÓGICA DE SELEÇÃO (ITENS ÚNICOS) ---
-
-		// Funções 'helper' para o template saber se um item está selecionado
-		isExameAvulsoSelected(exame) {
-			return this.examesAvulsosSelecionados.some((e) => e.id === exame.id)
-		},
-		isPacoteSelected(pacote) {
-			return this.pacotesSelecionados.some((p) => p.id === pacote.id)
-		},
+		// --- LÓGICA DE SELEÇÃO (ATUALIZADA) ---
 
 		// Adiciona se não existir
 		adicionarExameAvulso(exame) {
@@ -318,6 +405,11 @@ export default {
 			}
 			this.examesAvulsosSelecionados.push(exame)
 			this.$toast.success(`"${exame.name}" adicionado.`)
+
+			// --- MELHORIA DE UX (Mobile) ---
+			// Limpa o filtro para mostrar a lista completa novamente
+			this.exameSearchQuery = ""
+			// ---------------------------------
 		},
 		adicionarPacote(pacote) {
 			if (this.isPacoteSelected(pacote)) {
@@ -326,9 +418,14 @@ export default {
 			}
 			this.pacotesSelecionados.push(pacote)
 			this.$toast.success(`Pacote "${pacote.name}" adicionado.`)
+
+			// --- MELHORIA DE UX (Mobile) ---
+			// Limpa o filtro para mostrar a lista completa novamente
+			this.pacoteSearchQuery = ""
+			// ---------------------------------
 		},
 
-		// Remove por ID (funciona em ambos os layouts)
+		// Remove por ID (sem alterações)
 		removerExameAvulso(exame) {
 			this.examesAvulsosSelecionados = this.examesAvulsosSelecionados.filter(
 				(e) => e.id !== exame.id
@@ -342,7 +439,7 @@ export default {
 			this.$toast.error(`Pacote "${pacote.name}" removido.`)
 		},
 
-		// --- MÉTODO DE IMPRESSÃO (API) ---
+		// --- MÉTODO DE IMPRESSÃO (sem alterações) ---
 		imprimir() {
 			this.isLoading = true
 
@@ -362,7 +459,6 @@ export default {
 					window.open(fileURL, "_blank")
 					this.isLoading = false
 
-					// Limpa a solicitação após a impressão
 					this.examesAvulsosSelecionados = []
 					this.pacotesSelecionados = []
 					this.$toast.success("PDF gerado com sucesso!")

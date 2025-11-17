@@ -1,10 +1,20 @@
 <template>
 	<div>
-		<div class="flex justify-between items-center mb-6">
+		<div
+			class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
 			<h1 class="text-3xl font-bold text-dark">Gestão de Exames</h1>
+
+			<div class="w-full md:w-1/2 lg:w-1/3">
+				<input
+					v-model="searchQuery"
+					type="text"
+					placeholder="Pesquisar por nome ou grupo..."
+					class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary" />
+			</div>
+			<p>-- Ou --</p>
 			<button
 				@click="abrirModalParaCriar"
-				class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded-lg">
+				class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded-lg w-full md:w-auto flex-shrink-0">
 				Cadastrar Novo Exame
 			</button>
 		</div>
@@ -29,12 +39,15 @@
 							A carregar exames...
 						</td>
 					</tr>
-					<tr v-else-if="exames.length === 0">
+					<tr v-else-if="filteredExames.length === 0">
 						<td colspan="4" class="p-4 text-center text-gray-500">
-							Nenhum exame cadastrado.
+							<span v-if="searchQuery"
+								>Nenhum exame encontrado para "{{ searchQuery }}".</span
+							>
+							<span v-else>Nenhum exame cadastrado.</span>
 						</td>
 					</tr>
-					<tr v-for="exame in exames" :key="exame.id">
+					<tr v-for="exame in filteredExames" :key="exame.id">
 						<td class="p-4 align-top">{{ exame.name }}</td>
 						<td class="p-4 align-top">{{ exame.group }}</td>
 						<td class="p-4 align-top">{{ exame.laterality || "N/A" }}</td>
@@ -56,7 +69,6 @@
 										d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
 								</svg>
 							</button>
-
 							<button
 								@click="handleDelete(exame.id)"
 								class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 ml-2"
@@ -84,15 +96,20 @@
 					A carregar exames...
 				</div>
 				<div
-					v-else-if="exames.length === 0"
+					v-else-if="filteredExames.length === 0"
 					class="p-4 text-center text-gray-500">
-					Nenhum exame cadastrado.
+					<span v-if="searchQuery"
+						>Nenhum exame encontrado para "{{ searchQuery }}".</span
+					>
+					<span v-else>Nenhum exame cadastrado.</span>
 				</div>
 
-				<div v-for="exame in exames" :key="'mobile-' + exame.id" class="p-4">
+				<div
+					v-for="exame in filteredExames"
+					:key="'mobile-' + exame.id"
+					class="p-4">
 					<div class="flex justify-between items-center mb-3">
 						<div class="font-bold text-dark text-lg">{{ exame.name }}</div>
-
 						<div class="flex-shrink-0">
 							<button
 								@click="abrirModalParaEditar(exame)"
@@ -111,7 +128,6 @@
 										d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
 								</svg>
 							</button>
-
 							<button
 								@click="handleDelete(exame.id)"
 								class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 ml-2"
@@ -131,7 +147,6 @@
 							</button>
 						</div>
 					</div>
-
 					<div class="space-y-1 text-sm">
 						<div class="flex">
 							<strong class="w-24 flex-shrink-0 text-gray-500">Grupo:</strong>
@@ -170,15 +185,34 @@ export default {
 
 	data() {
 		return {
-			isLoading: true, // Adicionado para feedback inicial
-			exames: [], // A lista de exames da API
+			isLoading: true,
+			exames: [],
 			isModalOpen: false,
-			exameSelecionado: null, // Guarda o exame a ser editado
-
-			// Estado para o modal de confirmação
+			exameSelecionado: null,
 			isConfirmOpen: false,
-			exameParaExcluir: null, // Guarda o ID do exame a ser excluído
+			exameParaExcluir: null,
+
+			// Estado para o Filtro/Pesquisa
+			searchQuery: "",
 		}
+	},
+
+	// Propriedade computada para o Filtro/Pesquisa
+	computed: {
+		filteredExames() {
+			if (!this.searchQuery) {
+				return this.exames // Retorna tudo se a busca estiver vazia
+			}
+
+			const lowerQuery = this.searchQuery.toLowerCase()
+
+			return this.exames.filter((exame) => {
+				// Verifica se o nome OU o grupo incluem o texto da busca
+				const nameMatch = exame.name.toLowerCase().includes(lowerQuery)
+				const groupMatch = exame.group.toLowerCase().includes(lowerQuery)
+				return nameMatch || groupMatch
+			})
+		},
 	},
 
 	methods: {
@@ -192,7 +226,6 @@ export default {
 				})
 				.catch((error) => {
 					console.error("Erro ao carregar exames:", error)
-					// Usa o toast para erros
 					this.$toast.error("Erro ao carregar exames.")
 				})
 				.finally(() => {
@@ -206,7 +239,6 @@ export default {
 			this.isModalOpen = true
 		},
 		abrirModalParaEditar(exame) {
-			// Passamos uma *cópia* do exame para o modal
 			this.exameSelecionado = { ...exame } // Modo "Editar"
 			this.isModalOpen = true
 		},
@@ -217,47 +249,37 @@ export default {
 
 		// Chamado quando o modal emite '@salvo'
 		handleSalvo(mensagem) {
-			this.fecharModal() // Fecha o modal
-			this.fetchExames() // Atualiza a tabela
-			// Usa o toast para sucesso
+			this.fecharModal()
+			this.fetchExames()
 			this.$toast.success(mensagem)
 		},
 
-		// Chamado pelo botão 'Excluir'
+		// Lógica de Exclusão
 		handleDelete(id) {
-			// Abre o modal de confirmação
 			this.exameParaExcluir = id
 			this.isConfirmOpen = true
 		},
-
-		// Métodos de controlo do modal de confirmação
 		fecharModalConfirm() {
 			this.isConfirmOpen = false
 			this.exameParaExcluir = null
 		},
-
 		confirmarExclusao() {
-			// A lógica de exclusão real agora vive aqui
 			api
 				.deleteExame(this.exameParaExcluir)
 				.then(() => {
 					this.fetchExames()
-					// Usa o toast para sucesso
 					this.$toast.success("Exame excluído com sucesso!")
 				})
 				.catch((error) => {
 					console.error("Erro ao excluir exame:", error)
-					// Usa o toast para erros
 					this.$toast.error("Erro ao excluir o exame.")
 				})
 				.finally(() => {
-					// Fecha o modal independentemente do resultado
 					this.fecharModalConfirm()
 				})
 		},
 	},
 
-	// 'mounted' é chamado quando a página é carregada
 	mounted() {
 		this.fetchExames()
 	},
