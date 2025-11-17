@@ -1,29 +1,29 @@
 <template>
-	<aside
-		class="hidden md:flex fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out"
-		:class="isRetracted ? 'w-20' : 'w-64'">
-		<div class="flex h-full flex-col overflow-y-auto bg-dark-accent p-4">
-			<div class="mb-6 flex items-center justify-between">
-				<span v-if="!isRetracted" class="text-2xl font-bold text-white">
-					Eyecare
-				</span>
-				<button @click="toggle" class="text-light-bg hover:text-white p-2">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="h-6 w-6">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-					</svg>
-				</button>
-			</div>
+	<nav
+		class="fixed top-0 left-0 right-0 z-50 bg-dark-accent p-4 shadow-lg md:hidden">
+		<div class="flex items-center justify-between">
+			<span class="text-2xl font-bold text-white">Exames</span>
 
-			<ul class="space-y-2">
+			<button
+				@click="toggleMobileMenu"
+				class="text-light-bg hover:text-white p-2">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="h-6 w-6">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+				</svg>
+			</button>
+		</div>
+
+		<div v-if="isMobileMenuOpen" class="mt-4 bg-dark rounded-lg shadow-xl">
+			<ul class="flex flex-col p-2">
 				<router-link
 					v-for="link in links"
 					:key="link.name"
@@ -31,39 +31,30 @@
 					:exact="link.exact"
 					v-slot="{ href, navigate, isActive }"
 					custom>
-					<li
-						:class="[isActive ? 'bg-primary' : 'hover:bg-dark', 'rounded-lg']">
+					<li :class="[isActive ? 'bg-primary' : '', 'rounded-lg']">
 						<a
 							:href="href"
-							@click="navigate"
-							class="flex items-center p-3 text-light-bg"
-							:title="link.name">
+							@click="navigateAndClose(navigate)"
+							class="flex items-center p-3 text-light-bg">
 							<span class="h-6 w-6" v-html="link.iconSvg"></span>
-
-							<span v-if="!isRetracted" class="ml-3">{{ link.name }}</span>
+							<span class="ml-3">{{ link.name }}</span>
 						</a>
 					</li>
 				</router-link>
 			</ul>
 		</div>
-	</aside>
+	</nav>
 </template>
 
 <script>
-// (3) REMOVEMOS TODOS OS IMPORTS DE '@heroicons/vue'
-
 export default {
-	name: "Sidebar",
-	// (4) REMOVEMOS O 'components: { ... }'
-	props: {
-		isRetracted: {
-			type: Boolean,
-			default: false,
-		},
-	},
+	name: "Header",
 	data() {
 		return {
-			// (5) Adicionamos a propriedade 'iconSvg' com o código SVG
+			// (4) Estado que controla o menu dropdown
+			isMobileMenuOpen: false,
+
+			// (5) Copiamos os mesmos links e SVGs da Sidebar
 			links: [
 				{
 					name: "Dashboard",
@@ -94,9 +85,16 @@ export default {
 		}
 	},
 	methods: {
-		toggle() {
-			this.$emit("toggle")
+		toggleMobileMenu() {
+			this.isMobileMenuOpen = !this.isMobileMenuOpen
+		},
+		navigateAndClose(navigate) {
+			// Navega para a rota
+			navigate()
+			// Fecha o menu
+			this.isMobileMenuOpen = false
 		},
 	},
+	// (IMPORTANTE: Cole os SVGs completos do seu Sidebar.vue nos 'links' acima)
 }
 </script>
