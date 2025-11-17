@@ -34,6 +34,14 @@ export default {
 	createPacote(pacoteData) {
 		return apiClient.post("/pacotes", pacoteData)
 	},
+	// --- FUNÇÕES ADICIONADAS ---
+	updatePacote(id, pacoteData) {
+		return apiClient.put(`/pacotes/${id}`, pacoteData)
+	},
+	deletePacote(id) {
+		return apiClient.delete(`/pacotes/${id}`)
+	},
+	// -------------------------
 
 	gerarPdf(idsParaImpressao) {
 		return apiClient.post("/gerar-impressao", idsParaImpressao, {

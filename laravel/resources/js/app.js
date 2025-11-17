@@ -8,6 +8,12 @@ Vue.component("modal-gestao-exame", () =>
 	import("./components/ModalGestaoExame.vue")
 )
 // ------------------------------------
+// --- ADICIONE ESTE NOVO COMPONENTE ---
+Vue.component("modal-gestao-pacote", () =>
+	import("./components/ModalGestaoPacote.vue")
+)
+// ------------------------------------
+
 // --- ADICIONAR A CONFIGURAÇÃO DO TOAST ---
 import Toast from "vue-toastification"
 import "vue-toastification/dist/index.css" // Importa o CSS
