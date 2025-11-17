@@ -55,25 +55,52 @@
 
 					<div class="mb-4">
 						<label class="block text-gray-700 text-sm font-bold mb-2">
-							Selecione os Exames
+							Selecione os Exames ({{ examesSelecionadosIds.length }})
 						</label>
-						<div class="border rounded p-2 bg-gray-50">
+
+						<input
+							v-model="exameSearchQuery"
+							type="text"
+							placeholder="Pesquisar exames..."
+							class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-2" />
+
+						<div class="border rounded bg-gray-50 h-64 overflow-y-auto">
 							<div
-								v-for="exame in examesDisponiveis"
-								:key="exame.id"
-								class="flex items-center p-1">
-								<input
-									type="checkbox"
-									:id="'gestao-exame-' + exame.id"
-									:value="exame.id"
-									v-model="examesSelecionadosIds"
-									class="mr-2 h-4 w-4" />
-								<label
-									:for="'gestao-exame-' + exame.id"
-									class="text-gray-700"
-									>{{ exame.name }}</label
-								>
+								v-if="filteredExames.length === 0"
+								class="p-4 text-center text-gray-500">
+								<span v-if="exameSearchQuery">Nenhum exame encontrado.</span>
+								<span v-else>Nenhum exame disponível.</span>
 							</div>
+
+							<ul>
+								<li
+									v-for="exame in filteredExames"
+									:key="exame.id"
+									class="flex justify-between items-center p-3 border-b"
+									:class="{ 'bg-light-bg': isExameSelected(exame) }">
+									<div>
+										<div class="font-medium text-dark">{{ exame.name }}</div>
+										<div class="text-sm text-gray-600">{{ exame.group }}</div>
+									</div>
+
+									<button
+										v-if="!isExameSelected(exame)"
+										@click="toggleExame(exame)"
+										type="button"
+										class="text-primary hover:text-dark-accent text-2xl font-bold"
+										title="Adicionar">
+										+
+									</button>
+									<button
+										v-else
+										@click="toggleExame(exame)"
+										type="button"
+										class="text-green-500 hover:text-green-700 text-2xl font-bold"
+										title="Remover">
+										✓
+									</button>
+								</li>
+							</ul>
 						</div>
 						<p v-if="erros.exams" class="text-red-500 text-xs italic">
 							{{ erros.exams[0] }}
@@ -108,8 +135,8 @@ export default {
 
 	props: {
 		show: { type: Boolean, default: false },
-		pacote: { type: Object, default: null }, // Se nulo = Criar, se objeto = Editar
-		examesDisponiveis: { type: Array, default: () => [] }, // Lista de todos os exames
+		pacote: { type: Object, default: null },
+		examesDisponiveis: { type: Array, default: () => [] },
 	},
 
 	data() {
@@ -118,8 +145,9 @@ export default {
 				name: "",
 				observations: "",
 			},
-			examesSelecionadosIds: [], // Array de IDs (ex: [1, 5, 12])
+			examesSelecionadosIds: [],
 			erros: {},
+			exameSearchQuery: "",
 		}
 	},
 
@@ -127,24 +155,38 @@ export default {
 		tituloModal() {
 			return this.pacote ? "Editar Pacote" : "Cadastrar Novo Pacote"
 		},
+
+		filteredExames() {
+			if (!this.exameSearchQuery) {
+				return this.examesDisponiveis
+			}
+			const query = this.exameSearchQuery.toLowerCase()
+			return this.examesDisponiveis.filter((exame) =>
+				exame.name.toLowerCase().includes(query)
+			)
+		},
+
+		isExameSelected() {
+			const selectedIds = new Set(this.examesSelecionadosIds)
+			return (exame) => selectedIds.has(exame.id)
+		},
 	},
 
 	watch: {
-		// Observador para preencher o formulário quando o modal abrir
 		show(novoValor) {
 			if (novoValor) {
-				// Modal está abrindo
 				this.erros = {}
+				this.exameSearchQuery = ""
+
 				if (this.pacote) {
-					// Modo EDIÇÃO: Preenche o formulário com os dados do pacote
+					// Modo EDIÇÃO
 					this.formData.name = this.pacote.name
 					this.formData.observations = this.pacote.observations
-					// Preenche os checkboxes com os exames que já estão no pacote
 					this.examesSelecionadosIds = this.pacote.exames.map(
 						(exame) => exame.id
 					)
 				} else {
-					// Modo CRIAÇÃO: Limpa o formulário
+					// Modo CRIAÇÃO
 					this.limparFormulario()
 				}
 			}
@@ -156,13 +198,33 @@ export default {
 			this.formData.name = ""
 			this.formData.observations = ""
 			this.examesSelecionadosIds = []
+			this.exameSearchQuery = ""
 		},
 
 		fechar() {
 			this.$emit("close")
 		},
 
-		// Validação client-side
+		// (UX) Método "Toggle" para adicionar/remover exames
+		toggleExame(exame) {
+			const index = this.examesSelecionadosIds.indexOf(exame.id)
+
+			if (index > -1) {
+				// Já existe, vamos remover
+				this.examesSelecionadosIds.splice(index, 1)
+				this.$toast.error(`"${exame.name}" removido do pacote.`)
+			} else {
+				// Não existe, vamos adicionar
+				this.examesSelecionadosIds.push(exame.id)
+				this.$toast.success(`"${exame.name}" adicionado ao pacote.`)
+
+				// --- ESTA É A CORREÇÃO ---
+				// Limpa o filtro para mostrar a lista completa novamente
+				this.exameSearchQuery = ""
+				// -------------------------
+			}
+		},
+
 		validarFormulario() {
 			this.erros = {}
 			if (!this.formData.name) {
@@ -186,15 +248,15 @@ export default {
 			}
 
 			const apiCall = this.pacote
-				? api.updatePacote(this.pacote.id, payload) // Modo Editar
-				: api.createPacote(payload) // Modo Criar
+				? api.updatePacote(this.pacote.id, payload)
+				: api.createPacote(payload)
 
 			apiCall
 				.then((response) => {
 					const mensagem = this.pacote
 						? "Pacote atualizado com sucesso!"
 						: "Pacote criado com sucesso!"
-					this.$emit("salvo", mensagem) // Avisa o "pai"
+					this.$emit("salvo", mensagem)
 				})
 				.catch((error) => {
 					if (error.response && error.response.status === 422) {
