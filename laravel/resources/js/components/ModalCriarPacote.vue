@@ -111,7 +111,6 @@ export default {
 
 	data() {
 		return {
-			// Estado interno do formulário
 			novoPacote: {
 				name: "",
 				observations: "",
@@ -123,51 +122,38 @@ export default {
 
 	methods: {
 		fechar() {
-			// 1. Limpa o formulário
 			this.novoPacote.name = ""
 			this.novoPacote.observations = ""
 			this.examesSelecionadosIds = []
 			this.erros = {}
 
-			// 2. Avisa o "pai" para fechar
 			this.$emit("close")
 		},
 
 		salvar() {
-			// Limpa erros antigos
 			this.erros = {}
 
-			// Validação local simples (a API fará a validação principal)
 			if (this.examesSelecionadosIds.length === 0) {
 				this.erros = { exams: ["Selecione pelo menos um exame."] }
 				return
 			}
 
-			// 1. Monta o objeto final para a API
 			const payload = {
 				name: this.novoPacote.name,
 				observations: this.novoPacote.observations,
 				exams: this.examesSelecionadosIds,
 			}
 
-			// 2. Chama a API
 			api
 				.createPacote(payload)
 				.then((response) => {
-					// 3. Sucesso!
 					console.log("Pacote criado:", response.data)
-
-					// 4. Avisa o "pai" que um novo pacote foi criado
 					this.$emit("pacote-criado")
-
-					// 5. Fecha o modal
 					this.fechar()
 				})
 				.catch((error) => {
-					// 6. Lidar com erros (ex: erros de validação 422 da API)
 					if (error.response && error.response.status === 422) {
 						console.error("Erros de validação:", error.response.data.errors)
-						// Armazena os erros para mostrar no formulário
 						this.erros = error.response.data.errors
 					} else {
 						console.error("Erro ao salvar pacote:", error)

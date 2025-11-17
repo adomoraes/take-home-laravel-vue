@@ -70,7 +70,7 @@ export default {
 
 	data() {
 		return {
-			examesSelecionadosIds: [], // Array de IDs (ex: [2, 4])
+			examesSelecionadosIds: [],
 		}
 	},
 
@@ -81,15 +81,12 @@ export default {
 		},
 
 		adicionar() {
-			// 1. Encontra os objetos completos dos exames selecionados
 			const examesParaAdicionar = this.examesDisponiveis.filter((exame) =>
 				this.examesSelecionadosIds.includes(exame.id)
 			)
 
-			// 2. Envia os objetos para o componente "pai"
 			this.$emit("exames-adicionados", examesParaAdicionar)
 
-			// 3. Fecha o modal
 			this.fechar()
 		},
 	},

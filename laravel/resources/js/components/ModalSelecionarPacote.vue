@@ -73,30 +73,23 @@ export default {
 
 	data() {
 		return {
-			// Estado interno do formulário
-			pacotesSelecionadosIds: [], // Array de IDs (ex: [1, 3])
+			pacotesSelecionadosIds: [],
 		}
 	},
 
 	methods: {
 		fechar() {
-			// 1. Limpa a seleção
 			this.pacotesSelecionadosIds = []
-
-			// 2. Avisa o "pai" para fechar
 			this.$emit("close")
 		},
 
 		adicionar() {
-			// 1. Encontra os objetos completos dos pacotes selecionados
 			const pacotesParaAdicionar = this.pacotesDisponiveis.filter((pacote) =>
 				this.pacotesSelecionadosIds.includes(pacote.id)
 			)
 
-			// 2. Envia os objetos para o componente "pai"
 			this.$emit("pacotes-adicionados", pacotesParaAdicionar)
 
-			// 3. Fecha o modal
 			this.fechar()
 		},
 	},

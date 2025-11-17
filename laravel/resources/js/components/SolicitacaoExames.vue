@@ -149,7 +149,7 @@ export default {
 				.getExames()
 				.then((response) => {
 					this.examesDaApi = response.data
-					console.log("Exames carregados:", this.examesDaApi)
+					
 				})
 				.catch((error) => {
 					console.error("Erro ao carregar exames:", error)
@@ -160,7 +160,6 @@ export default {
 				.getPacotes()
 				.then((response) => {
 					this.pacotesDaApi = response.data
-					console.log("Pacotes carregados:", this.pacotesDaApi)
 				})
 				.catch((error) => {
 					console.error("Erro ao carregar pacotes:", error)
@@ -193,7 +192,6 @@ export default {
 				}
 			})
 			this.fecharModalSelecionar()
-			console.log("Pacotes na solicitação:", this.pacotesSelecionados)
 		},
 
 		// --- MÉTODOS MODAL EXAME AVULSO ---
