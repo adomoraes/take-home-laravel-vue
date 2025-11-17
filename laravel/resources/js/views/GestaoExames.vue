@@ -1,12 +1,5 @@
 <template>
 	<div>
-		<div
-			v-if="notificacao.show"
-			class="mb-4 p-4 rounded-md text-white"
-			:class="notificacao.type === 'success' ? 'bg-green-500' : 'bg-red-500'">
-			{{ notificacao.message }}
-		</div>
-
 		<div class="flex justify-between items-center mb-6">
 			<h1 class="text-3xl font-bold text-dark">Gestão de Exames</h1>
 			<button
@@ -29,7 +22,12 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-if="exames.length === 0">
+					<tr v-if="isLoading">
+						<td colspan="4" class="p-4 text-center text-gray-500">
+							A carregar exames...
+						</td>
+					</tr>
+					<tr v-else-if="exames.length === 0">
 						<td colspan="4" class="p-4 text-center text-gray-500">
 							Nenhum exame cadastrado.
 						</td>
@@ -63,6 +61,13 @@
 			:exame="exameSelecionado"
 			@close="fecharModal"
 			@salvo="handleSalvo" />
+
+		<modal-confirmacao
+			:show="isConfirmOpen"
+			titulo="Confirmar Exclusão"
+			mensagem="Tem certeza que deseja excluir este exame? Esta ação não pode ser desfeita."
+			@close="fecharModalConfirm"
+			@confirm="confirmarExclusao" />
 	</div>
 </template>
 
@@ -74,32 +79,21 @@ export default {
 
 	data() {
 		return {
+			isLoading: true, // Adicionado para feedback inicial
 			exames: [], // A lista de exames da API
 			isModalOpen: false,
 			exameSelecionado: null, // Guarda o exame a ser editado
-			notificacao: {
-				show: false,
-				message: "",
-				type: "success", // 'success' ou 'error'
-			},
+
+			// Estado para o modal de confirmação
+			isConfirmOpen: false,
+			exameParaExcluir: null, // Guarda o ID do exame a ser excluído
 		}
 	},
 
 	methods: {
-		// (Requisito) Notificação na tela
-		mostrarNotificacao(message, type = "success") {
-			this.notificacao.message = message
-			this.notificacao.type = type
-			this.notificacao.show = true
-
-			// Esconde a notificação após 3 segundos
-			setTimeout(() => {
-				this.notificacao.show = false
-			}, 3000)
-		},
-
 		// Carrega os dados da API
 		fetchExames() {
+			this.isLoading = true
 			api
 				.getExames()
 				.then((response) => {
@@ -107,7 +101,11 @@ export default {
 				})
 				.catch((error) => {
 					console.error("Erro ao carregar exames:", error)
-					this.mostrarNotificacao("Erro ao carregar exames.", "error")
+					// (Requisito) Usa o toast para erros
+					this.$toast.error("Erro ao carregar exames.")
+				})
+				.finally(() => {
+					this.isLoading = false
 				})
 		},
 
@@ -130,29 +128,40 @@ export default {
 		handleSalvo(mensagem) {
 			this.fecharModal() // Fecha o modal
 			this.fetchExames() // Atualiza a tabela
-			this.mostrarNotificacao(mensagem, "success") // Mostra feedback
+			// (Requisito) Usa o toast para sucesso
+			this.$toast.success(mensagem)
 		},
 
 		// Chamado pelo botão 'Excluir'
 		handleDelete(id) {
-			// (Requisito UX) Pede confirmação
-			if (
-				!window.confirm(
-					"Tem certeza que deseja excluir este exame? Esta ação não pode ser desfeita."
-				)
-			) {
-				return
-			}
+			// (Requisito UX) Abre o modal de confirmação
+			this.exameParaExcluir = id
+			this.isConfirmOpen = true
+		},
 
+		// Métodos de controlo do modal de confirmação
+		fecharModalConfirm() {
+			this.isConfirmOpen = false
+			this.exameParaExcluir = null
+		},
+
+		confirmarExclusao() {
+			// A lógica de exclusão real agora vive aqui
 			api
-				.deleteExame(id)
+				.deleteExame(this.exameParaExcluir)
 				.then(() => {
-					this.fetchExames() // Atualiza a tabela
-					this.mostrarNotificacao("Exame excluído com sucesso!", "success")
+					this.fetchExames()
+					// (Requisito) Usa o toast para sucesso
+					this.$toast.success("Exame excluído com sucesso!")
 				})
 				.catch((error) => {
 					console.error("Erro ao excluir exame:", error)
-					this.mostrarNotificacao("Erro ao excluir o exame.", "error")
+					// (Requisito) Usa o toast para erros
+					this.$toast.error("Erro ao excluir o exame.")
+				})
+				.finally(() => {
+					// Fecha o modal independentemente do resultado
+					this.fecharModalConfirm()
 				})
 		},
 	},
