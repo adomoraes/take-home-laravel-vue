@@ -1,9 +1,10 @@
 <template>
 	<div
 		v-if="show"
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-		<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
-			<div class="flex justify-between items-center p-4 border-b">
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-y-auto p-4">
+		<div
+			class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+			<div class="flex justify-between items-center p-4 border-b flex-shrink-0">
 				<h3 class="text-lg font-semibold">{{ tituloModal }}</h3>
 				<button
 					@click="fechar"
@@ -12,7 +13,7 @@
 				</button>
 			</div>
 
-			<div class="p-4">
+			<div class="overflow-y-auto p-4">
 				<form @submit.prevent="salvar">
 					<div
 						v-if="erros.geral"
@@ -56,7 +57,7 @@
 						<label class="block text-gray-700 text-sm font-bold mb-2">
 							Selecione os Exames
 						</label>
-						<div class="border rounded p-2 h-64 overflow-y-auto bg-gray-50">
+						<div class="border rounded p-2 bg-gray-50">
 							<div
 								v-for="exame in examesDisponiveis"
 								:key="exame.id"
@@ -78,21 +79,22 @@
 							{{ erros.exams[0] }}
 						</p>
 					</div>
-
-					<div class="flex justify-end pt-4 border-t">
-						<button
-							@click="fechar"
-							type="button"
-							class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
-							Cancelar
-						</button>
-						<button
-							type="submit"
-							class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded">
-							Salvar Pacote
-						</button>
-					</div>
 				</form>
+			</div>
+			<div
+				class="flex justify-end p-4 border-t bg-gray-50 rounded-b-lg flex-shrink-0">
+				<button
+					@click="fechar"
+					type="button"
+					class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
+					Cancelar
+				</button>
+				<button
+					@click="salvar"
+					type="button"
+					class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded">
+					Salvar Pacote
+				</button>
 			</div>
 		</div>
 	</div>
