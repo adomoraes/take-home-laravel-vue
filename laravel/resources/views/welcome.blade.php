@@ -4,17 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Solicitação de Exames</title>
+    <title>Dashboard Exames</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-200 p-10">
-
+<body class="antialiased">
     <div id="app">
-
-        <solicitacao-exames></solicitacao-exames>
-
+        <router-view />
     </div>
 
 </body>
