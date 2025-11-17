@@ -40,13 +40,37 @@
 						<td class="p-4">
 							<button
 								@click="abrirModalParaEditar(pacote)"
-								class="text-blue-600 hover:text-blue-900 font-medium mr-3">
-								Editar
+								class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-light-bg"
+								title="Editar Pacote">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="h-5 w-5">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+								</svg>
 							</button>
 							<button
 								@click="handleDelete(pacote.id)"
-								class="text-red-600 hover:text-red-900 font-medium">
-								Excluir
+								class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 ml-2"
+								title="Excluir Pacote">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="h-5 w-5">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12.54 0c-.27-0.091-.54-0.18-.81-0.27m-.81.27L3 5.79m0 0c0-0.407.328-0.735.735-0.735h18.53c.407 0 .735.328.735.735m-19.995 0l-1.17 1.17m1.17-1.17h19.995" />
+								</svg>
 							</button>
 						</td>
 					</tr>
