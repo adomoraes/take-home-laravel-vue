@@ -210,9 +210,12 @@ export default {
 				delete payload.laterality
 			}
 
-			const apiCall = this.exame
+			const promise = this.exame
 				? api.updateExame(this.exame.id, payload)
-				.then((response) => {
+				: api.createExame(payload)
+
+			promise
+				.then(() => {
 					const mensagem = this.exame
 						? "Exame atualizado com sucesso!"
 						: "Exame criado com sucesso!"
