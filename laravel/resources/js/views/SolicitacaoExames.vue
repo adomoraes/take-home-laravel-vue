@@ -1,125 +1,146 @@
 <template>
-	<div class="p-6 bg-gray-50 rounded-lg shadow-md max-w-4xl mx-auto">
-		<div class="flex justify-between items-center border-b pb-4 mb-4">
-			<h2 class="text-xl font-bold text-gray-700">Solicitação de Exames</h2>
-
-			<div class="flex flex-wrap gap-2">
-				<button
-					@click="abrirModalCriarExame"
-					class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">
-					Cadastrar Novo Exame
-				</button>
-				<button
-					@click="abrirModalExame"
-					class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
-					Adicionar Exame Avulso
-				</button>
-				<button
-					@click="abrirModalSelecionar"
-					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-					Pacote de exames
-				</button>
-				<button
-					@click="abrirModalNovoPacote"
-					class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-					Novo pacote de Exames
-				</button>
-			</div>
+	<div>
+		<div class="flex justify-between items-center mb-6">
+			<h1 class="text-3xl font-bold text-dark">Solicitar Exames</h1>
+			<button
+				@click="imprimir"
+				:disabled="isLoading || totalSelecionado === 0"
+				class="bg-primary hover:bg-dark-accent text-white font-bold py-2 px-4 rounded-lg"
+				:class="{
+					'opacity-50 cursor-not-allowed': isLoading || totalSelecionado === 0,
+				}">
+				<span v-if="isLoading">Aguarde...</span>
+				<span v-else>Imprimir Solicitação ({{ totalSelecionado }})</span>
+			</button>
 		</div>
 
-		<modal-criar-exame
-			:show="isModalCriarExameVisible"
-			@close="fecharModalCriarExame"
-			@exame-criado="handleExameCriado">
-		</modal-criar-exame>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div class="bg-white rounded-lg shadow-lg">
+				<div class="p-4 border-b">
+					<nav class="flex space-x-4">
+						<button
+							@click="currentTab = 'exames'"
+							:class="[
+								currentTab === 'exames'
+									? 'border-primary text-primary'
+									: 'border-transparent text-gray-500 hover:text-dark',
+							]"
+							class="py-2 px-1 border-b-2 font-medium">
+							Exames Avulsos ({{ examesDaApi.length }})
+						</button>
+						<button
+							@click="currentTab = 'pacotes'"
+							:class="[
+								currentTab === 'pacotes'
+									? 'border-primary text-primary'
+									: 'border-transparent text-gray-500 hover:text-dark',
+							]"
+							class="py-2 px-1 border-b-2 font-medium">
+							Pacotes ({{ pacotesDaApi.length }})
+						</button>
+					</nav>
+				</div>
 
-		<modal-criar-pacote
-			:show="isModalCriarVisible"
-			:exames-disponiveis="examesDaApi"
-			@close="fecharModalNovoPacote"
-			@pacote-criado="recarregarPacotes">
-		</modal-criar-pacote>
+				<div class="h-96 overflow-y-auto">
+					<div v-if="currentTab === 'exames'">
+						<ul>
+							<li
+								v-for="exame in examesDaApi"
+								:key="'exame-' + exame.id"
+								class="flex justify-between items-center p-3 hover:bg-light-bg border-b">
+								<div>
+									<div class="font-medium text-dark">{{ exame.name }}</div>
+									<div class="text-sm text-gray-600">{{ exame.group }}</div>
+								</div>
+								<button
+									@click="adicionarExameAvulso(exame)"
+									class="text-primary hover:text-dark-accent text-2xl font-bold"
+									title="Adicionar">
+									+
+								</button>
+							</li>
+						</ul>
+					</div>
 
-		<modal-selecionar-pacote
-			:show="isModalSelecionarVisible"
-			:pacotes-disponiveis="pacotesDaApi"
-			@close="fecharModalSelecionar"
-			@pacotes-adicionados="adicionarPacotes">
-		</modal-selecionar-pacote>
-
-		<modal-selecionar-exame
-			:show="isModalExameVisible"
-			:exames-disponiveis="examesDaApi"
-			@close="fecharModalExame"
-			@exames-adicionados="adicionarExamesAvulsos">
-		</modal-selecionar-exame>
-
-		<div class="bg-gray-100 p-4 rounded-md mt-6">
-			<div
-				v-if="examesAvulsosSelecionados.length > 0"
-				class="mb-4 p-3 bg-white rounded shadow-sm border">
-				<h3 class="font-semibold text-gray-800">Exames avulsos</h3>
-				<ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
-					<li v-for="exame in examesAvulsosSelecionados" :key="exame.id">
-						{{ exame.name }} ({{ exame.comment }})
-					</li>
-				</ul>
-			</div>
-
-			<div v-if="pacotesSelecionados.length > 0" class="mb-4">
-				<div
-					v-for="pacote in pacotesSelecionados"
-					:key="pacote.id"
-					class="mb-2 p-3 bg-white rounded shadow-sm border">
-					<h3 class="font-semibold text-gray-800">{{ pacote.name }}</h3>
-					<ul class="list-disc pl-5 mt-1 text-sm text-gray-600">
-						<li v-for="exame in pacote.exames" :key="exame.id">
-							{{ exame.name }}
-						</li>
-					</ul>
+					<div v-if="currentTab === 'pacotes'">
+						<ul>
+							<li
+								v-for="pacote in pacotesDaApi"
+								:key="'pacote-' + pacote.id"
+								class="flex justify-between items-center p-3 hover:bg-light-bg border-b">
+								<div>
+									<div class="font-medium text-dark">{{ pacote.name }}</div>
+									<div class="text-sm text-gray-600">
+										{{ pacote.exames.length }} exame(s)
+									</div>
+								</div>
+								<button
+									@click="adicionarPacote(pacote)"
+									class="text-primary hover:text-dark-accent text-2xl font-bold"
+									title="Adicionar">
+									+
+								</button>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 
-			<div
-				v-if="
-					pacotesSelecionados.length === 0 &&
-					examesAvulsosSelecionados.length === 0
-				"
-				class="text-gray-500">
-				Nenhum exame ou pacote selecionado.
-			</div>
+			<div class="bg-white rounded-lg shadow-lg">
+				<div class="p-4 border-b">
+					<h2 class="text-xl font-semibold text-dark">Sua Solicitação</h2>
+				</div>
 
-			<div class="flex justify-end mt-6">
-				<button
-					@click="imprimir"
-					:disabled="
-						isLoading ||
-						(pacotesSelecionados.length === 0 &&
-							examesAvulsosSelecionados.length === 0)
-					"
-					class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-					:class="{
-						'opacity-50 cursor-not-allowed':
-							isLoading ||
-							(pacotesSelecionados.length === 0 &&
-								examesAvulsosSelecionados.length === 0),
-					}">
-					<span v-if="isLoading">Aguarde...</span>
-					<span v-else>Imprimir Solicitação</span>
-				</button>
+				<div class="h-96 overflow-y-auto p-4">
+					<div
+						v-if="totalSelecionado === 0"
+						class="text-center text-gray-500 pt-16">
+						<p>Selecione exames ou pacotes da lista ao lado.</p>
+					</div>
+
+					<div v-if="examesAvulsosSelecionados.length > 0" class="mb-4">
+						<h3 class="font-semibold text-gray-800 mb-2">Exames avulsos</h3>
+						<ul class="list-none space-y-2">
+							<li
+								v-for="(exame, index) in examesAvulsosSelecionados"
+								:key="'avulso-' + index + exame.id"
+								class="flex justify-between items-center p-2 bg-light-bg rounded">
+								<span class="text-dark">{{ exame.name }}</span>
+								<button
+									@click="removerExame(index)"
+									class="text-red-500 hover:text-red-700 text-xl"
+									title="Remover">
+									&times;
+								</button>
+							</li>
+						</ul>
+					</div>
+
+					<div v-if="pacotesSelecionados.length > 0">
+						<h3 class="font-semibold text-gray-800 mb-2">Pacotes</h3>
+						<ul class="list-none space-y-2">
+							<li
+								v-for="(pacote, index) in pacotesSelecionados"
+								:key="'pacote-sel-' + index + pacote.id"
+								class="flex justify-between items-center p-2 bg-light-bg rounded">
+								<span class="text-dark">{{ pacote.name }}</span>
+								<button
+									@click="removerPacote(index)"
+									class="text-red-500 hover:text-red-700 text-xl"
+									title="Remover">
+									&times;
+								</button>
+							</li>
+						</ul>
+					</div>
+				</div>
 			</div>
-			<p
-				v-if="erroImpressao"
-				class="text-red-500 text-xs italic text-right mt-2">
-				{{ erroImpressao }}
-			</p>
 		</div>
 	</div>
 </template>
 
 <script>
 import api from "../apiService"
-// Os modais são carregados automaticamente porque os registámos no app.js
 
 export default {
 	name: "SolicitacaoExames",
@@ -129,21 +150,27 @@ export default {
 			examesDaApi: [],
 			pacotesDaApi: [],
 
+			// Coluna da Direita (A Solicitação)
 			examesAvulsosSelecionados: [], // Array de OBJETOS de exame
 			pacotesSelecionados: [], // Array de OBJETOS de pacote
 
-			isModalCriarVisible: false,
-			isModalSelecionarVisible: false,
-			isModalExameVisible: false,
-			isModalCriarExameVisible: false, // <-- ESTADO ADICIONADO
+			currentTab: "exames", // Controla as abas 'exames' ou 'pacotes'
 
 			isLoading: false,
-			erroImpressao: null,
 		}
 	},
 
+	computed: {
+		// Calcula o total de itens na solicitação
+		totalSelecionado() {
+			return (
+				this.examesAvulsosSelecionados.length + this.pacotesSelecionados.length
+			)
+		},
+	},
+
 	methods: {
-		// --- MÉTODOS DE CARREGAMENTO ---
+		// --- MÉTODOS DE CARREGAMENTO (API) ---
 		carregarExames() {
 			api
 				.getExames()
@@ -151,7 +178,7 @@ export default {
 					this.examesDaApi = response.data
 				})
 				.catch((error) => {
-					console.error("Erro ao carregar exames:", error)
+					this.$toast.error("Erro ao carregar exames.")
 				})
 		},
 		carregarPacotes() {
@@ -161,76 +188,41 @@ export default {
 					this.pacotesDaApi = response.data
 				})
 				.catch((error) => {
-					console.error("Erro ao carregar pacotes:", error)
+					this.$toast.error("Erro ao carregar pacotes.")
 				})
 		},
 
-		// --- MÉTODOS MODAL NOVO PACOTE ---
-		abrirModalNovoPacote() {
-			this.isModalCriarVisible = true
+		// --- MÉTODOS DE MANIPULAÇÃO DA LISTA (UX) ---
+		adicionarExameAvulso(exame) {
+			// (Requisito UX) Permite adicionar o mesmo exame avulso várias vezes
+			this.examesAvulsosSelecionados.push(exame)
+			this.$toast.success(`"${exame.name}" adicionado.`)
 		},
-		fecharModalNovoPacote() {
-			this.isModalCriarVisible = false
-		},
-		recarregarPacotes() {
-			this.fecharModalNovoPacote()
-			this.carregarPacotes()
-		},
-
-		// --- MÉTODOS MODAL SELECIONAR PACOTE ---
-		abrirModalSelecionar() {
-			this.isModalSelecionarVisible = true
-		},
-		fecharModalSelecionar() {
-			this.isModalSelecionarVisible = false
-		},
-		adicionarPacotes(pacotes) {
-			pacotes.forEach((pacote) => {
-				if (!this.pacotesSelecionados.find((p) => p.id === pacote.id)) {
-					this.pacotesSelecionados.push(pacote)
-				}
-			})
-			this.fecharModalSelecionar()
+		adicionarPacote(pacote) {
+			// (Requisito UX) Só permite adicionar o mesmo pacote uma vez
+			if (this.pacotesSelecionados.find((p) => p.id === pacote.id)) {
+				this.$toast.info(`Pacote "${pacote.name}" já foi adicionado.`)
+				return
+			}
+			this.pacotesSelecionados.push(pacote)
+			this.$toast.success(`Pacote "${pacote.name}" adicionado.`)
 		},
 
-		// --- MÉTODOS MODAL EXAME AVULSO ---
-		abrirModalExame() {
-			this.isModalExameVisible = true
+		// Remove pelo *índice* do array, para permitir duplicados (no caso dos exames)
+		removerExame(index) {
+			const exame = this.examesAvulsosSelecionados[index]
+			this.examesAvulsosSelecionados.splice(index, 1)
+			this.$toast.error(`"${exame.name}" removido.`)
 		},
-		fecharModalExame() {
-			this.isModalExameVisible = false
-		},
-		adicionarExamesAvulsos(exames) {
-			exames.forEach((exame) => {
-				if (!this.examesAvulsosSelecionados.find((e) => e.id === exame.id)) {
-					this.examesAvulsosSelecionados.push(exame)
-				}
-			})
-			this.fecharModalExame()
-			console.log(
-				"Exames avulsos na solicitação:",
-				this.examesAvulsosSelecionados
-			)
+		removerPacote(index) {
+			const pacote = this.pacotesSelecionados[index]
+			this.pacotesSelecionados.splice(index, 1)
+			this.$toast.error(`Pacote "${pacote.name}" removido.`)
 		},
 
-		// --- MÉTODOS ADICIONADOS PARA O MODAL DE CRIAR EXAME ---
-		abrirModalCriarExame() {
-			this.isModalCriarExameVisible = true
-		},
-		fecharModalCriarExame() {
-			this.isModalCriarExameVisible = false
-		},
-		handleExameCriado() {
-			// Este método é chamado pelo evento @exame-criado
-			this.fecharModalCriarExame()
-			this.carregarExames() // Recarrega a lista de exames
-		},
-		// --- FIM DOS MÉTODOS ADICIONADOS ---
-
-		// --- MÉTODO DE IMPRESSÃO ---
+		// --- MÉTODO DE IMPRESSÃO (API) ---
 		imprimir() {
 			this.isLoading = true
-			this.erroImpressao = null
 
 			const examesIds = this.examesAvulsosSelecionados.map((exame) => exame.id)
 			const pacotesIds = this.pacotesSelecionados.map((pacote) => pacote.id)
@@ -247,17 +239,21 @@ export default {
 					const fileURL = URL.createObjectURL(file)
 					window.open(fileURL, "_blank")
 					this.isLoading = false
+
+					// Limpa a solicitação após a impressão
+					this.examesAvulsosSelecionados = []
+					this.pacotesSelecionados = []
+					this.$toast.success("PDF gerado com sucesso!")
 				})
 				.catch((error) => {
 					console.error("Erro ao gerar PDF:", error)
-					this.erroImpressao = "Não foi possível gerar o PDF. Tente novamente."
+					this.$toast.error("Não foi possível gerar o PDF. Tente novamente.")
 					this.isLoading = false
 				})
 		},
 	},
 
 	mounted() {
-		console.log("Componente SolicitacaoExames montado.")
 		this.carregarExames()
 		this.carregarPacotes()
 	},
