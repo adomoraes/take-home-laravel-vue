@@ -15,15 +15,14 @@
 </template>
 
 <script>
-// (4) Importar AMBOS os componentes
 import Sidebar from "../components/Sidebar.vue"
-import Header from "../components/Header.vue" // <-- ADICIONADO
+import Header from "../components/Header.vue"
 
 export default {
 	name: "DashboardLayout",
 	components: {
 		Sidebar,
-		Header, // <-- ADICIONADO
+		Header,
 	},
 	data() {
 		return {
@@ -31,14 +30,11 @@ export default {
 		}
 	},
 	computed: {
-		// (5) Lógica da margem movida para uma computed property
 		mainMarginClass() {
-			// Em Mobile: Adiciona padding-top para compensar o Header fixo
-			// Em Desktop: Adiciona margin-left para compensar a Sidebar
 			if (this.isSidebarRetracted) {
-				return "pt-16 md:pt-0 md:ml-20" // Desktop Retraído
+				return "pt-16 md:pt-0 md:ml-20"
 			}
-			return "pt-16 md:pt-0 md:ml-64" // Desktop Normal
+			return "pt-16 md:pt-0 md:ml-64"
 		},
 	},
 	methods: {

@@ -179,14 +179,12 @@ export default {
 				this.exameSearchQuery = ""
 
 				if (this.pacote) {
-					// Modo EDIÇÃO
 					this.formData.name = this.pacote.name
 					this.formData.observations = this.pacote.observations
 					this.examesSelecionadosIds = this.pacote.exames.map(
 						(exame) => exame.id
 					)
 				} else {
-					// Modo CRIAÇÃO
 					this.limparFormulario()
 				}
 			}
@@ -205,23 +203,17 @@ export default {
 			this.$emit("close")
 		},
 
-		// (UX) Método "Toggle" para adicionar/remover exames
 		toggleExame(exame) {
 			const index = this.examesSelecionadosIds.indexOf(exame.id)
 
 			if (index > -1) {
-				// Já existe, vamos remover
 				this.examesSelecionadosIds.splice(index, 1)
 				this.$toast.error(`"${exame.name}" removido do pacote.`)
 			} else {
-				// Não existe, vamos adicionar
 				this.examesSelecionadosIds.push(exame.id)
 				this.$toast.success(`"${exame.name}" adicionado ao pacote.`)
 
-				// --- ESTA É A CORREÇÃO ---
-				// Limpa o filtro para mostrar a lista completa novamente
 				this.exameSearchQuery = ""
-				// -------------------------
 			}
 		},
 

@@ -187,13 +187,10 @@ export default {
 			pacoteSelecionado: null,
 			isConfirmOpen: false,
 			pacoteParaExcluir: null,
-
-			// Estado para o Filtro/Pesquisa
 			searchQuery: "",
 		}
 	},
 
-	// Propriedade computada para o Filtro/Pesquisa
 	computed: {
 		filteredPacotes() {
 			if (!this.searchQuery) {
@@ -207,7 +204,6 @@ export default {
 	},
 
 	methods: {
-		// Carrega os dados da API
 		fetchPacotes() {
 			this.isLoading = true
 			api
@@ -223,7 +219,6 @@ export default {
 					this.isLoading = false
 				})
 		},
-		// Precisamos da lista de exames para o modal
 		fetchExames() {
 			api
 				.getExames()
@@ -236,13 +231,12 @@ export default {
 				})
 		},
 
-		// Controla o modal
 		abrirModalParaCriar() {
-			this.pacoteSelecionado = null // Modo "Criar"
+			this.pacoteSelecionado = null
 			this.isModalOpen = true
 		},
 		abrirModalParaEditar(pacote) {
-			this.pacoteSelecionado = { ...pacote } // Modo "Editar"
+			this.pacoteSelecionado = { ...pacote }
 			this.isModalOpen = true
 		},
 		fecharModal() {
@@ -250,14 +244,12 @@ export default {
 			this.pacoteSelecionado = null
 		},
 
-		// Chamado quando o modal emite '@salvo'
 		handleSalvo(mensagem) {
 			this.fecharModal()
-			this.fetchPacotes() // Atualiza a tabela
-			this.$toast.success(mensagem) // Mostra feedback
+			this.fetchPacotes()
+			this.$toast.success(mensagem)
 		},
 
-		// Lógica de Exclusão
 		handleDelete(id) {
 			this.pacoteParaExcluir = id
 			this.isConfirmOpen = true
@@ -285,7 +277,7 @@ export default {
 
 	mounted() {
 		this.fetchPacotes()
-		this.fetchExames() // Carrega os exames para o modal
+		this.fetchExames()
 	},
 }
 </script>

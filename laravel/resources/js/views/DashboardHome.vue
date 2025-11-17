@@ -48,9 +48,6 @@ export default {
 </script>
 
 <style scoped>
-/* Vamos criar uma classe 'bento-box' personalizada para 
-  evitar repetição de código Tailwind (Boas Práticas).
-*/
 .bento-box {
 	@apply rounded-xl shadow-lg p-6 transition-all duration-300 ease-in-out transform hover:scale-[1.02] flex flex-col justify-between;
 }

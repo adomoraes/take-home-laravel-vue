@@ -303,19 +303,17 @@ export default {
 			examesDaApi: [],
 			pacotesDaApi: [],
 
-			examesAvulsosSelecionados: [], // Array de OBJETOS de exame
-			pacotesSelecionados: [], // Array de OBJETOS de pacote
+			examesAvulsosSelecionados: [],
+			pacotesSelecionados: [],
 
-			currentTab: "exames", // Controla as abas
+			currentTab: "exames",
 			isLoading: false,
 
-			// Estado para o Filtro/Pesquisa
 			exameSearchQuery: "",
 			pacoteSearchQuery: "",
 		}
 	},
 
-	// Propriedades computadas (sem alterações)
 	computed: {
 		totalSelecionado() {
 			return (
@@ -373,7 +371,6 @@ export default {
 	},
 
 	methods: {
-		// --- MÉTODOS DE CARREGAMENTO (API) ---
 		carregarExames() {
 			api
 				.getExames()
@@ -395,9 +392,6 @@ export default {
 				})
 		},
 
-		// --- LÓGICA DE SELEÇÃO (ATUALIZADA) ---
-
-		// Adiciona se não existir
 		adicionarExameAvulso(exame) {
 			if (this.isExameAvulsoSelected(exame)) {
 				this.$toast.info(`"${exame.name}" já foi adicionado.`)
@@ -406,10 +400,7 @@ export default {
 			this.examesAvulsosSelecionados.push(exame)
 			this.$toast.success(`"${exame.name}" adicionado.`)
 
-			// --- MELHORIA DE UX (Mobile) ---
-			// Limpa o filtro para mostrar a lista completa novamente
 			this.exameSearchQuery = ""
-			// ---------------------------------
 		},
 		adicionarPacote(pacote) {
 			if (this.isPacoteSelected(pacote)) {
@@ -419,13 +410,9 @@ export default {
 			this.pacotesSelecionados.push(pacote)
 			this.$toast.success(`Pacote "${pacote.name}" adicionado.`)
 
-			// --- MELHORIA DE UX (Mobile) ---
-			// Limpa o filtro para mostrar a lista completa novamente
 			this.pacoteSearchQuery = ""
-			// ---------------------------------
 		},
 
-		// Remove por ID (sem alterações)
 		removerExameAvulso(exame) {
 			this.examesAvulsosSelecionados = this.examesAvulsosSelecionados.filter(
 				(e) => e.id !== exame.id
@@ -439,7 +426,6 @@ export default {
 			this.$toast.error(`Pacote "${pacote.name}" removido.`)
 		},
 
-		// --- MÉTODO DE IMPRESSÃO (sem alterações) ---
 		imprimir() {
 			this.isLoading = true
 

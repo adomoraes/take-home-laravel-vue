@@ -50,11 +50,8 @@
 </template>
 
 <script>
-// (3) REMOVEMOS TODOS OS IMPORTS DE '@heroicons/vue'
-
 export default {
 	name: "Sidebar",
-	// (4) REMOVEMOS O 'components: { ... }'
 	props: {
 		isRetracted: {
 			type: Boolean,
@@ -63,7 +60,6 @@ export default {
 	},
 	data() {
 		return {
-			// (5) Adicionamos a propriedade 'iconSvg' com o código SVG
 			links: [
 				{
 					name: "Dashboard",

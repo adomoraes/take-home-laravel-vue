@@ -51,10 +51,8 @@ export default {
 	name: "Header",
 	data() {
 		return {
-			// (4) Estado que controla o menu dropdown
 			isMobileMenuOpen: false,
 
-			// (5) Copiamos os mesmos links e SVGs da Sidebar
 			links: [
 				{
 					name: "Dashboard",
@@ -89,12 +87,9 @@ export default {
 			this.isMobileMenuOpen = !this.isMobileMenuOpen
 		},
 		navigateAndClose(navigate) {
-			// Navega para a rota
 			navigate()
-			// Fecha o menu
 			this.isMobileMenuOpen = false
 		},
 	},
-	// (IMPORTANTE: Cole os SVGs completos do seu Sidebar.vue nos 'links' acima)
 }
 </script>

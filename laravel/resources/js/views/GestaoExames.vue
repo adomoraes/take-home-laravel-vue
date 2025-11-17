@@ -191,23 +191,19 @@ export default {
 			exameSelecionado: null,
 			isConfirmOpen: false,
 			exameParaExcluir: null,
-
-			// Estado para o Filtro/Pesquisa
 			searchQuery: "",
 		}
 	},
 
-	// Propriedade computada para o Filtro/Pesquisa
 	computed: {
 		filteredExames() {
 			if (!this.searchQuery) {
-				return this.exames // Retorna tudo se a busca estiver vazia
+				return this.exames
 			}
 
 			const lowerQuery = this.searchQuery.toLowerCase()
 
 			return this.exames.filter((exame) => {
-				// Verifica se o nome OU o grupo incluem o texto da busca
 				const nameMatch = exame.name.toLowerCase().includes(lowerQuery)
 				const groupMatch = exame.group.toLowerCase().includes(lowerQuery)
 				return nameMatch || groupMatch
@@ -216,7 +212,6 @@ export default {
 	},
 
 	methods: {
-		// Carrega os dados da API
 		fetchExames() {
 			this.isLoading = true
 			api
@@ -233,13 +228,12 @@ export default {
 				})
 		},
 
-		// Controla o modal
 		abrirModalParaCriar() {
-			this.exameSelecionado = null // Modo "Criar"
+			this.exameSelecionado = null
 			this.isModalOpen = true
 		},
 		abrirModalParaEditar(exame) {
-			this.exameSelecionado = { ...exame } // Modo "Editar"
+			this.exameSelecionado = { ...exame }
 			this.isModalOpen = true
 		},
 		fecharModal() {
@@ -247,14 +241,12 @@ export default {
 			this.exameSelecionado = null
 		},
 
-		// Chamado quando o modal emite '@salvo'
 		handleSalvo(mensagem) {
 			this.fecharModal()
 			this.fetchExames()
 			this.$toast.success(mensagem)
 		},
 
-		// Lógica de Exclusão
 		handleDelete(id) {
 			this.exameParaExcluir = id
 			this.isConfirmOpen = true

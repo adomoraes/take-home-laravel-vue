@@ -127,7 +127,7 @@ export default {
 
 	props: {
 		show: { type: Boolean, default: false },
-		exame: { type: Object, default: null }, // Se 'exame' for nulo, é "Criar". Se não, é "Editar".
+		exame: { type: Object, default: null },
 	},
 
 	data() {
@@ -138,7 +138,7 @@ export default {
 				group: "",
 				laterality: "",
 			},
-			erros: {}, // Erros de validação
+			erros: {},
 			gruposPermitidos: [
 				"Individual",
 				"Grupo 1",
@@ -152,23 +152,18 @@ export default {
 	},
 
 	computed: {
-		// Define o título do modal
 		tituloModal() {
 			return this.exame ? "Editar Exame" : "Cadastrar Novo Exame"
 		},
 	},
 
 	watch: {
-		// "Observador": sempre que a prop 'show' ou 'exame' mudar, isto é executado
 		show(novoValor) {
 			if (novoValor) {
-				// Se o modal estiver a abrir
-				this.erros = {} // Limpa erros
+				this.erros = {}
 				if (this.exame) {
-					// Modo EDIÇÃO: Preenche o formulário com os dados do exame
 					this.formData = { ...this.exame }
 				} else {
-					// Modo CRIAÇÃO: Limpa o formulário
 					this.limparFormulario()
 				}
 			}
@@ -189,9 +184,8 @@ export default {
 			this.$emit("close")
 		},
 
-		// (Requisito) Validação de Formulário Client-Side
 		validarFormulario() {
-			this.erros = {} // Limpa erros antigos
+			this.erros = {}
 
 			if (!this.formData.name) {
 				this.erros.name = ["O campo nome é obrigatório."]
@@ -203,14 +197,12 @@ export default {
 				this.erros.group = ["O campo grupo é obrigatório."]
 			}
 
-			// 'Object.keys(this.erros).length === 0' significa 'sem erros'
 			return Object.keys(this.erros).length === 0
 		},
 
 		salvar() {
-			// (Requisito) Mínimo de cliques: validamos aqui antes de enviar
 			if (!this.validarFormulario()) {
-				return // Para a execução se o formulário for inválido
+				return
 			}
 
 			let payload = { ...this.formData }
@@ -218,21 +210,16 @@ export default {
 				delete payload.laterality
 			}
 
-			// Define qual API chamar: Criar (POST) ou Atualizar (PUT)
 			const apiCall = this.exame
-				? api.updateExame(this.exame.id, payload) // Modo Editar
-				: api.createExame(payload) // Modo Criar
-
-			apiCall
+				? api.updateExame(this.exame.id, payload)
 				.then((response) => {
 					const mensagem = this.exame
 						? "Exame atualizado com sucesso!"
 						: "Exame criado com sucesso!"
-					this.$emit("salvo", mensagem) // Avisa o "pai" que salvou
+					this.$emit("salvo", mensagem)
 				})
 				.catch((error) => {
 					if (error.response && error.response.status === 422) {
-						// Erro de validação da API (Server-side)
 						this.erros = error.response.data.errors
 					} else {
 						this.erros.geral = "Ocorreu um erro inesperado. Tente novamente."
