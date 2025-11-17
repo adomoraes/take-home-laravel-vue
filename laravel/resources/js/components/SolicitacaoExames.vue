@@ -149,7 +149,6 @@ export default {
 				.getExames()
 				.then((response) => {
 					this.examesDaApi = response.data
-					
 				})
 				.catch((error) => {
 					console.error("Erro ao carregar exames:", error)
